@@ -1,0 +1,260 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { requireAdmin, requireUser } from "./auth";
+import { BRANDS, CITIES, MAX_IMAGES } from "./constants";
+import { db } from "./db";
+import { saveImage } from "./images";
+import { normalizePhone } from "./format";
+
+export type FormState =
+  | { error?: string; fieldErrors?: Record<string, string>; values?: Record<string, string> }
+  | undefined;
+
+// echoed back on validation errors so the form keeps what the user typed
+const valuesOf = (fd: FormData) =>
+  Object.fromEntries([...fd.entries()].filter((e): e is [string, string] => typeof e[1] === "string"));
+
+// ---------- session ----------
+
+export async function logout() {
+  (await cookies()).delete("session");
+  redirect("/");
+}
+
+export async function updateName(formData: FormData) {
+  const user = await requireUser("/my");
+  const name = String(formData.get("name") ?? "").trim().slice(0, 60);
+  await db.user.update({ where: { id: user.id }, data: { name: name || null } });
+  revalidatePath("/", "layout");
+}
+
+// ---------- listings ----------
+
+const listingSchema = z.object({
+  type: z.enum(["MOTORCYCLE", "SCOOTER"]),
+  brand: z.enum(BRANDS),
+  model: z.string().trim().min(1, "Enter the model").max(60),
+  year: z.coerce.number().int().min(1990, "Year looks too old").max(new Date().getFullYear() + 1, "Year is in the future"),
+  kmDriven: z.coerce.number().int().min(0, "Enter kilometres driven").max(500000),
+  ownerCount: z.coerce.number().int().min(1).max(10),
+  priceNpr: z.coerce.number().int().min(1000, "Price must be at least Rs. 1,000").max(100_000_000),
+  negotiable: z.boolean(),
+  city: z.enum(CITIES),
+  phone: z.string().transform(normalizePhone).refine((p) => /^977(98|97|96)\d{8}$/.test(p), "Enter a valid Nepali mobile number (98XXXXXXXX)"),
+  bluebookOk: z.boolean(),
+  title: z.string().trim().min(5, "Add a short title (at least 5 characters)").max(100),
+  description: z.string().trim().min(20, "Describe the condition in at least 20 characters").max(3000),
+});
+
+function parseListing(formData: FormData) {
+  return listingSchema.safeParse({
+    type: formData.get("type"),
+    brand: formData.get("brand"),
+    model: formData.get("model"),
+    year: formData.get("year"),
+    kmDriven: formData.get("kmDriven"),
+    ownerCount: formData.get("ownerCount"),
+    priceNpr: formData.get("priceNpr"),
+    negotiable: formData.get("negotiable") === "on",
+    city: formData.get("city"),
+    phone: String(formData.get("phone") ?? ""),
+    bluebookOk: formData.get("bluebookOk") === "on",
+    title: formData.get("title"),
+    description: formData.get("description"),
+  });
+}
+
+function fieldErrors(err: z.ZodError, fd: FormData): FormState {
+  const fe: Record<string, string> = {};
+  for (const i of err.issues) fe[String(i.path[0])] ??= i.message;
+  return { error: "Please fix the highlighted fields.", fieldErrors: fe, values: valuesOf(fd) };
+}
+
+function newFiles(formData: FormData) {
+  return formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+}
+
+export async function createListing(_: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser("/sell");
+  const parsed = parseListing(formData);
+  if (!parsed.success) return fieldErrors(parsed.error, formData);
+  const files = newFiles(formData);
+  if (files.length === 0) return { error: "Add at least one photo.", values: valuesOf(formData) };
+  if (files.length > MAX_IMAGES) return { error: `You can upload up to ${MAX_IMAGES} photos.`, values: valuesOf(formData) };
+
+  let urls: string[];
+  try {
+    urls = await Promise.all(files.map(saveImage));
+  } catch (e) {
+    return { error: (e as Error).message, values: valuesOf(formData) };
+  }
+
+  const listing = await db.listing.create({
+    data: {
+      ...parsed.data,
+      sellerId: user.id,
+      images: { create: urls.map((url, position) => ({ url, position })) },
+    },
+  });
+  redirect(`/listings/${listing.id}?posted=1`);
+}
+
+export async function updateListing(id: string, _: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser(`/listings/${id}/edit`);
+  const existing = await db.listing.findUnique({ where: { id }, include: { images: true } });
+  if (!existing || existing.sellerId !== user.id) return { error: "Listing not found." };
+
+  const parsed = parseListing(formData);
+  if (!parsed.success) return fieldErrors(parsed.error, formData);
+
+  const remove = new Set(formData.getAll("removeImage").map(String));
+  const keep = existing.images.filter((i) => !remove.has(i.id));
+  const files = newFiles(formData);
+  if (keep.length + files.length === 0) return { error: "A listing needs at least one photo.", values: valuesOf(formData) };
+  if (keep.length + files.length > MAX_IMAGES) return { error: `You can have up to ${MAX_IMAGES} photos.`, values: valuesOf(formData) };
+
+  let urls: string[];
+  try {
+    urls = await Promise.all(files.map(saveImage));
+  } catch (e) {
+    return { error: (e as Error).message, values: valuesOf(formData) };
+  }
+
+  await db.$transaction([
+    db.image.deleteMany({ where: { listingId: id, id: { in: [...remove] } } }),
+    db.image.createMany({ data: urls.map((url, i) => ({ listingId: id, url, position: keep.length + i })) }),
+    db.listing.update({
+      where: { id },
+      // edits to a live ad go back through review so details can't be swapped after approval
+      data: { ...parsed.data, status: existing.status === "SOLD" ? "SOLD" : "PENDING", rejectReason: null },
+    }),
+  ]);
+  redirect(`/listings/${id}?edited=1`);
+}
+
+export async function setSold(formData: FormData) {
+  const user = await requireUser("/my");
+  const id = String(formData.get("id"));
+  const sold = formData.get("sold") === "1";
+  const l = await db.listing.findUnique({ where: { id } });
+  if (!l || l.sellerId !== user.id || (l.status !== "ACTIVE" && l.status !== "SOLD")) return;
+  await db.listing.update({ where: { id }, data: { status: sold ? "SOLD" : "ACTIVE" } });
+  revalidatePath("/my");
+}
+
+export async function deleteListing(formData: FormData) {
+  const user = await requireUser("/my");
+  const id = String(formData.get("id"));
+  const l = await db.listing.findUnique({ where: { id } });
+  if (!l || (l.sellerId !== user.id && user.role !== "ADMIN")) return;
+  // threads/reports reference the listing without cascade, so clear them first
+  await db.$transaction([
+    db.message.deleteMany({ where: { thread: { listingId: id } } }),
+    db.thread.deleteMany({ where: { listingId: id } }),
+    db.report.deleteMany({ where: { listingId: id } }),
+    db.listing.delete({ where: { id } }),
+  ]);
+  revalidatePath("/my");
+  revalidatePath("/admin", "layout");
+  if (formData.get("redirect")) redirect(String(formData.get("redirect")));
+}
+
+export async function toggleFavorite(formData: FormData) {
+  const listingId = String(formData.get("id"));
+  const user = await requireUser(`/listings/${listingId}`);
+  const key = { userId_listingId: { userId: user.id, listingId } };
+  const has = await db.favorite.findUnique({ where: key });
+  if (has) await db.favorite.delete({ where: key });
+  else await db.favorite.create({ data: { userId: user.id, listingId } });
+  revalidatePath(`/listings/${listingId}`);
+  revalidatePath("/saved");
+}
+
+// ---------- chat ----------
+
+export async function startThread(formData: FormData) {
+  const listingId = String(formData.get("id"));
+  const user = await requireUser(`/listings/${listingId}`);
+  const listing = await db.listing.findUnique({ where: { id: listingId } });
+  if (!listing || listing.status !== "ACTIVE" || listing.sellerId === user.id) redirect(`/listings/${listingId}`);
+  const thread = await db.thread.upsert({
+    where: { listingId_buyerId: { listingId, buyerId: user.id } },
+    update: {},
+    create: { listingId, buyerId: user.id },
+  });
+  redirect(`/inbox/${thread.id}`);
+}
+
+export async function sendMessage(threadId: string, _: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser(`/inbox/${threadId}`);
+  const body = String(formData.get("body") ?? "").trim();
+  if (!body) return undefined;
+  if (body.length > 1000) return { error: "Message is too long." };
+  const t = await db.thread.findUnique({ where: { id: threadId }, include: { listing: true } });
+  if (!t || (t.buyerId !== user.id && t.listing.sellerId !== user.id)) return { error: "Conversation not found." };
+  await db.message.create({ data: { threadId, senderId: user.id, body } });
+  revalidatePath(`/inbox/${threadId}`);
+  return undefined;
+}
+
+// ---------- reports & moderation ----------
+
+export async function reportListing(_: FormState, formData: FormData): Promise<FormState> {
+  const id = String(formData.get("id"));
+  const user = await requireUser(`/listings/${id}`);
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (reason.length < 5) return { error: "Tell us briefly what is wrong." };
+  await db.report.create({ data: { listingId: id, reporterId: user.id, reason: reason.slice(0, 500) } });
+  return { error: undefined, fieldErrors: { done: "1" } };
+}
+
+export async function approveListing(formData: FormData) {
+  await requireAdmin();
+  await db.listing.update({ where: { id: String(formData.get("id")) }, data: { status: "ACTIVE", rejectReason: null } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function rejectListing(formData: FormData) {
+  await requireAdmin();
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 300) || "Does not meet our listing guidelines.";
+  await db.listing.update({ where: { id: String(formData.get("id")) }, data: { status: "REJECTED", rejectReason: reason } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function resolveReport(formData: FormData) {
+  await requireAdmin();
+  await db.report.update({ where: { id: String(formData.get("id")) }, data: { resolved: true } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function setBanned(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id"));
+  const ban = formData.get("ban") === "1";
+  if (id === admin.id) return;
+  const target = await db.user.findUnique({ where: { id } });
+  if (!target || target.role === "ADMIN") return;
+  await db.$transaction([
+    db.user.update({ where: { id }, data: { banned: ban } }),
+    ...(ban
+      ? [db.listing.updateMany({
+          where: { sellerId: id, status: { in: ["ACTIVE", "PENDING"] } },
+          data: { status: "REJECTED", rejectReason: "Account suspended." },
+        })]
+      : []),
+  ]);
+  revalidatePath("/admin", "layout");
+}
+
+export async function setRole(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = String(formData.get("id"));
+  if (id === admin.id) return;
+  const role = formData.get("role") === "ADMIN" ? "ADMIN" : "USER";
+  await db.user.update({ where: { id }, data: { role } });
+  revalidatePath("/admin", "layout");
+}

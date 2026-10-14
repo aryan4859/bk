@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #faf8f4;
+  --color-card: #ffffff;
+  --color-ink: #1e1a16;
+  --color-muted: #6f675d;
+  --color-line: #e5dfd4;
+  --color-wash: #f2eee6;
+  --color-brand: #a93226;
+  --color-brand-dark: #8a281e;
+  --color-ok: #2f6b3f;
+  --color-warn: #8a5a00;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@utility input {
+  @apply w-full rounded-md border border-line bg-card px-3 py-2 text-[15px] outline-none placeholder:text-muted/60 focus:border-ink;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-[15px] font-medium transition-colors disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 text-[15px] font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50;
+}
+
+@utility btn-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-card px-4 py-2 text-[15px] font-medium transition-colors hover:border-ink disabled:opacity-50;
+}
+
+@utility label {
+  @apply mb-1 block text-sm font-medium;
+}

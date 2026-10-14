@@ -1,0 +1,103 @@
+import type { Prisma } from "@prisma/client";
+import Link from "next/link";
+import { ConfirmButton } from "@/components/ConfirmButton";
+import { setBanned, setRole } from "@/lib/actions";
+import { requireAdmin } from "@/lib/auth";
+import { db } from "@/lib/db";
+
+const PAGE = 25;
+
+export default async function AdminUsers({ searchParams }: PageProps<"/admin/users">) {
+  const me = await requireAdmin();
+  const sp = await searchParams;
+  const q = (typeof sp.q === "string" ? sp.q : "").trim().slice(0, 80);
+  const page = Math.max(1, Number(sp.page) || 1);
+  const where: Prisma.UserWhereInput = q
+    ? { OR: [{ email: { contains: q, mode: "insensitive" } }, { name: { contains: q, mode: "insensitive" } }] }
+    : {};
+
+  const [users, total] = await Promise.all([
+    db.user.findMany({
+      where, orderBy: { createdAt: "desc" }, skip: (page - 1) * PAGE, take: PAGE,
+      include: { _count: { select: { listings: true, reports: true } } },
+    }),
+    db.user.count({ where }),
+  ]);
+  const pages = Math.max(1, Math.ceil(total / PAGE));
+  const href = (p: number) => `/admin/users?${new URLSearchParams({ ...(q && { q }), page: String(p) })}`;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold">Users <span className="text-lg font-normal text-muted">{total}</span></h1>
+        <form className="flex gap-2">
+          <input name="q" defaultValue={q} placeholder="Email or name" className="input w-60 py-1.5" />
+          <button className="btn-outline py-1.5">Search</button>
+        </form>
+      </div>
+
+      <div className="mt-5 overflow-x-auto rounded-lg border border-line bg-card">
+        <table className="w-full text-left text-[15px]">
+          <thead className="border-b border-line text-sm text-muted">
+            <tr>
+              <th className="p-3 font-medium">User</th>
+              <th className="p-3 font-medium">Ads</th>
+              <th className="p-3 font-medium">Joined</th>
+              <th className="p-3 font-medium">Status</th>
+              <th className="p-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {users.map((u) => (
+              <tr key={u.id}>
+                <td className="p-3">
+                  <div className="font-medium">{u.email}</div>
+                  {u.name && <div className="text-sm text-muted">{u.name}</div>}
+                </td>
+                <td className="p-3">{u._count.listings}</td>
+                <td className="whitespace-nowrap p-3 text-muted">{u.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                <td className="p-3">
+                  {u.banned ? <span className="rounded bg-brand/10 px-2 py-0.5 text-xs text-brand">Suspended</span>
+                    : u.role === "ADMIN" ? <span className="rounded bg-ink px-2 py-0.5 text-xs text-white">Admin</span>
+                    : <span className="text-muted">Active</span>}
+                </td>
+                <td className="p-3">
+                  {u.id !== me.id && (
+                    <div className="flex justify-end gap-3 text-sm">
+                      {u.role !== "ADMIN" && (
+                        <form action={setBanned}>
+                          <input type="hidden" name="id" value={u.id} />
+                          <input type="hidden" name="ban" value={u.banned ? "0" : "1"} />
+                          {u.banned
+                            ? <button className="text-brand hover:underline">Restore</button>
+                            : <ConfirmButton message={`Suspend ${u.email}? Their live ads will be taken down.`} className="text-muted hover:text-brand">Suspend</ConfirmButton>}
+                        </form>
+                      )}
+                      {!u.banned && (
+                        <form action={setRole}>
+                          <input type="hidden" name="id" value={u.id} />
+                          <input type="hidden" name="role" value={u.role === "ADMIN" ? "USER" : "ADMIN"} />
+                          <ConfirmButton message={u.role === "ADMIN" ? `Remove admin rights from ${u.email}?` : `Make ${u.email} an admin?`} className="text-muted hover:text-ink">
+                            {u.role === "ADMIN" ? "Remove admin" : "Make admin"}
+                          </ConfirmButton>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {pages > 1 && (
+        <nav className="mt-6 flex items-center justify-center gap-4 text-sm">
+          {page > 1 ? <Link href={href(page - 1)} className="btn-outline">Previous</Link> : <span />}
+          <span className="text-muted">Page {page} of {pages}</span>
+          {page < pages ? <Link href={href(page + 1)} className="btn-outline">Next</Link> : <span />}
+        </nav>
+      )}
+    </div>
+  );
+}
