@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { BUSINESS } from "./business";
 
 export async function sendMail(to: string, subject: string, text: string) {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GMAIL_SENDER } =
@@ -15,7 +16,7 @@ export async function sendMail(to: string, subject: string, text: string) {
 
   const raw = Buffer.from(
     [
-      `From: Motovo Nepal <${GMAIL_SENDER}>`,
+      `From: ${BUSINESS.siteName} <${GMAIL_SENDER}>`,
       `To: ${to}`,
       `Subject: ${subject}`,
       "Content-Type: text/plain; charset=utf-8",

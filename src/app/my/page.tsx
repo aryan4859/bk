@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/PageHero";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { Photo } from "@/components/Photo";
 import { deleteListing, setSold, updateName } from "@/lib/actions";
@@ -7,10 +8,10 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatNpr, timeAgo } from "@/lib/format";
 
-export const metadata: Metadata = { title: "My ads" };
+export const metadata: Metadata = { title: "My account", robots: { index: false } };
 
 const BADGE: Record<string, string> = {
-  PENDING: "bg-warn/10 text-warn", ACTIVE: "bg-ok/10 text-ok", SOLD: "bg-wash text-muted", REJECTED: "bg-brand/10 text-brand",
+  PENDING: "bg-warn/10 text-warn", ACTIVE: "bg-ok/10 text-ok", SOLD: "bg-surface-sunk text-muted", REJECTED: "bg-brand/10 text-brand",
 };
 const LABEL: Record<string, string> = { PENDING: "In review", ACTIVE: "Live", SOLD: "Sold", REJECTED: "Not approved" };
 
@@ -22,29 +23,29 @@ export default async function My() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold">My account</h1>
-      <form action={updateName} className="mt-5 flex max-w-md items-end gap-2">
+    <>
+    <PageHero title="My account" subtitle={`Signed in as ${user.email}`} />
+    <div className="mx-auto max-w-3xl px-6 py-10">
+      <form action={updateName} className="flex max-w-md items-end gap-2 rounded-lg border border-line bg-surface p-5 ">
         <div className="flex-1">
           <label className="label" htmlFor="name">Display name</label>
           <input id="name" name="name" defaultValue={user.name ?? ""} placeholder="Shown to buyers" className="input" />
         </div>
         <button className="btn-outline">Save</button>
       </form>
-      <p className="mt-2 text-sm text-muted">Signed in as {user.email}</p>
 
       <div className="mt-10 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">My ads</h2>
+        <h2 className="font-display text-2xl font-semibold">My ads</h2>
         <Link href="/sell" className="btn-primary">Post a new ad</Link>
       </div>
 
       {listings.length === 0 ? (
         <p className="mt-6 rounded-lg border border-dashed border-line p-8 text-center text-muted">You have not posted anything yet.</p>
       ) : (
-        <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-card">
+        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface ">
           {listings.map((l) => (
             <li key={l.id} className="flex gap-4 p-4">
-              <Link href={`/listings/${l.id}`} className="relative h-20 w-28 shrink-0 overflow-hidden rounded-md bg-wash">
+              <Link href={`/listings/${l.id}`} className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-surface-sunk">
                 <Photo src={l.images[0]?.url} alt="" />
               </Link>
               <div className="min-w-0 flex-1">
@@ -52,7 +53,7 @@ export default async function My() {
                   <Link href={`/listings/${l.id}`} className="truncate font-medium hover:underline">{l.title}</Link>
                   <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${BADGE[l.status]}`}>{LABEL[l.status]}</span>
                 </div>
-                <div className="text-sm text-muted">{formatNpr(l.priceNpr)} · posted {timeAgo(l.createdAt)}</div>
+                <div className="text-sm text-muted">{formatNpr(l.priceNpr)}, posted {timeAgo(l.createdAt)}</div>
                 {l.status === "REJECTED" && <div className="mt-1 text-sm text-brand">{l.rejectReason}</div>}
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
                   <Link href={`/listings/${l.id}/edit`} className="text-brand hover:underline">Edit</Link>
@@ -74,5 +75,6 @@ export default async function My() {
         </ul>
       )}
     </div>
+    </>
   );
 }

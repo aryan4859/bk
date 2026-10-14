@@ -58,3 +58,16 @@ export async function searchListings(f: Filters) {
   ]);
   return { items, total, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
+
+/** Number of conversations with messages from the other side that the user hasn't opened yet. */
+export async function unreadThreadCount(userId: string) {
+  const [row] = await db.$queryRaw<{ n: number }[]>`
+    SELECT COUNT(DISTINCT t."id")::int AS n
+    FROM "Thread" t
+    JOIN "Listing" l ON l."id" = t."listingId"
+    JOIN "Message" m ON m."threadId" = t."id"
+    WHERE m."senderId" <> ${userId}
+      AND ((t."buyerId" = ${userId} AND m."createdAt" > t."buyerReadAt")
+        OR (l."sellerId" = ${userId} AND m."createdAt" > t."sellerReadAt"))`;
+  return row?.n ?? 0;
+}

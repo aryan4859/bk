@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatKm, formatNpr } from "@/lib/format";
 import { Photo } from "./Photo";
+import { Chip } from "./ui/Chip";
 
 type Props = {
   listing: {
@@ -12,22 +13,18 @@ type Props = {
 
 export function ListingCard({ listing: l }: Props) {
   return (
-    <Link href={`/listings/${l.id}`} className="group block overflow-hidden rounded-lg border border-line bg-card transition-colors hover:border-ink">
-      <div className="relative aspect-[4/3] bg-wash">
-        <Photo src={l.images[0]?.url} alt={l.title} />
-        {l.status === "SOLD" && (
-          <span className="absolute left-2 top-2 rounded bg-ink px-2 py-0.5 text-xs font-medium text-white">Sold</span>
-        )}
+    <Link href={`/listings/${l.id}`} className="group block">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-wash">
+        <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">
+          <Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}${l.images[0] ? "" : " (no photo)"}`} />
+        </div>
+        {l.status === "SOLD" && <Chip tone="dark" className="absolute left-2 top-2 z-10">Sold</Chip>}
+        <Chip tone="price" className="absolute bottom-2 left-2 z-10">{formatNpr(l.priceNpr)}</Chip>
       </div>
-      <div className="p-3">
-        <div className="text-lg font-semibold">
-          {formatNpr(l.priceNpr)}
-          {l.negotiable && <span className="ml-2 text-xs font-normal text-muted">negotiable</span>}
-        </div>
-        <div className="mt-0.5 truncate text-[15px]">{l.brand} {l.model}</div>
-        <div className="mt-1 text-sm text-muted">
-          {l.year} · {formatKm(l.kmDriven)} · {l.city}
-        </div>
+      <div className="mt-3">
+        <div className="truncate font-semibold group-hover:underline">{l.brand} {l.model}</div>
+        <div className="text-sm text-muted">{l.year}, {formatKm(l.kmDriven)}</div>
+        <div className="text-sm text-muted">{l.city}{l.negotiable ? ", negotiable" : ""}</div>
       </div>
     </Link>
   );

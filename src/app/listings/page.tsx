@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FilterForm } from "@/components/Filters";
 import { ListingCard } from "@/components/ListingCard";
+import { FilterPanel } from "@/components/FilterPanel";
+import { PageHero } from "@/components/PageHero";
 import { parseFilters, searchListings } from "@/lib/queries";
 
-export const metadata: Metadata = { title: "Browse bikes and scooters" };
+export const metadata: Metadata = { title: "Browse bikes and scooters", description: "Filter used motorcycles and scooters for sale in Nepal by brand, city, price, year and kilometres driven." };
 
 export default async function Browse({ searchParams }: PageProps<"/listings">) {
   const f = parseFilters(await searchParams);
@@ -18,29 +20,25 @@ export default async function Browse({ searchParams }: PageProps<"/listings">) {
   };
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[240px_1fr]">
+    <>
+    <PageHero
+      title={`${total} ${f.brand ? `${f.brand} ` : ""}${total === 1 ? "bike" : "bikes"} for sale${f.city ? ` in ${f.city}` : ""}`}
+      subtitle="Listings from sellers across Nepal."
+    />
+    <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[250px_1fr]">
       <aside className="lg:sticky lg:top-6 lg:self-start">
-        <details open className="rounded-lg border border-line bg-card p-4 lg:[&>summary]:hidden">
-          <summary className="cursor-pointer font-medium lg:hidden">Filters</summary>
-          <div className="mt-3 lg:mt-0">
-            <FilterForm f={f} />
-          </div>
-        </details>
+        <FilterPanel>
+          <FilterForm f={f} />
+        </FilterPanel>
       </aside>
 
       <section>
-        <h1 className="text-2xl font-semibold">
-          {total} {total === 1 ? "bike" : "bikes"} for sale
-          {f.brand && <span className="text-muted"> · {f.brand}</span>}
-          {f.city && <span className="text-muted"> · {f.city}</span>}
-        </h1>
-
         {items.length === 0 ? (
-          <div className="mt-6 rounded-lg border border-dashed border-line p-10 text-center text-muted">
+          <div className="rounded-lg border border-dashed border-line p-10 text-center text-muted">
             No bikes match these filters. Try widening your search.
           </div>
         ) : (
-          <div className="mt-5 grid grid-cols-2 gap-4 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 xl:grid-cols-3">
             {items.map((l) => <ListingCard key={l.id} listing={l} />)}
           </div>
         )}
@@ -54,5 +52,6 @@ export default async function Browse({ searchParams }: PageProps<"/listings">) {
         )}
       </section>
     </div>
+    </>
   );
 }

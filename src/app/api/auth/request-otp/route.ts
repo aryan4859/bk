@@ -1,15 +1,20 @@
 import { randomInt } from "crypto";
 import { z } from "zod";
+import { BUSINESS } from "@/lib/business";
 import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 import { hashCode } from "@/lib/otp";
+import { HOUR, clientIp, rateLimit } from "@/lib/ratelimit";
 
-const body = z.object({ email: z.string().email().toLowerCase() });
+const body = z.object({ email: z.string().email().toLowerCase(), consent: z.literal(true) });
 
 export async function POST(req: Request) {
   const parsed = body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return Response.json({ error: "Invalid email" }, { status: 400 });
+  if (!parsed.success) return Response.json({ error: "Enter a valid email and agree to the terms and privacy policy." }, { status: 400 });
   const { email } = parsed.data;
+
+  if (!(await rateLimit(`otp-req:ip:${await clientIp()}`, 10, HOUR)) || !(await rateLimit(`otp-req:email:${email}`, 5, HOUR)))
+    return Response.json({ error: "Too many attempts. Try again later." }, { status: 429 });
 
   const recent = await db.otp.count({
     where: { email, createdAt: { gt: new Date(Date.now() - 60_000) } },
@@ -22,7 +27,7 @@ export async function POST(req: Request) {
     data: { email, codeHash: hashCode(email, code), expiresAt: new Date(Date.now() + 10 * 60_000) },
   });
   try {
-    await sendMail(email, "Your test login code", `Your code is ${code}. It expires in 10 minutes.`);
+    await sendMail(email, `Your ${BUSINESS.siteName} login code`, `Your code is ${code}. It expires in 10 minutes.`);
   } catch (e) {
     console.error("OTP email failed:", (e as { response?: { data?: unknown } }).response?.data ?? (e as Error).message);
     await db.otp.deleteMany({ where: { email } });

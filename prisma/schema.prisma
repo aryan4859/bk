@@ -77,6 +77,7 @@ model Listing {
   updatedAt    DateTime      @updatedAt
 
   @@index([status, createdAt])
+  @@index([status, priceNpr])
   @@index([brand, model])
   @@index([city])
 }
@@ -97,6 +98,9 @@ model Thread {
   buyer     User      @relation("buyer", fields: [buyerId], references: [id])
   messages  Message[]
   createdAt DateTime  @default(now())
+  // last time each side opened the conversation; newer messages from the other side are "unread"
+  buyerReadAt  DateTime @default(now())
+  sellerReadAt DateTime @default(now())
 
   @@unique([listingId, buyerId])
 }
@@ -131,4 +135,11 @@ model Favorite {
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@id([userId, listingId])
+}
+
+/// Fixed-window counters backing lib/ratelimit.ts
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
 }

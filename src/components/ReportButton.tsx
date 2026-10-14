@@ -11,9 +11,9 @@ export function ReportButton({ id }: { id: string }) {
       <summary className="cursor-pointer text-muted hover:text-ink">Report this ad</summary>
       <form action={action} className="mt-2 space-y-2">
         <input type="hidden" name="id" value={id} />
-        <textarea name="reason" rows={3} placeholder="Fake photos, wrong price, already sold…" className="input" />
-        {state?.error && <p className="text-brand">{state.error}</p>}
-        <button disabled={pending} className="btn-outline">Send report</button>
+        <textarea name="reason" rows={3} aria-label="Why are you reporting this ad?" placeholder="Fake photos, wrong price, already sold…" className="input" />
+        {state?.error && <p role="alert" className="text-brand">{state.error}</p>}
+        <button type="submit" disabled={pending} className="btn-outline">{pending ? "Sending…" : "Send report"}</button>
       </form>
     </details>
   );

@@ -12,7 +12,11 @@ import { formatKm, formatNpr, timeAgo } from "@/lib/format";
 
 export async function generateMetadata({ params }: PageProps<"/listings/[id]">): Promise<Metadata> {
   const l = await db.listing.findUnique({ where: { id: (await params).id } });
-  return { title: l && l.status === "ACTIVE" ? `${l.year} ${l.brand} ${l.model}` : "Bike" };
+  if (!l || l.status !== "ACTIVE") return { title: "Bike", robots: { index: false } };
+  return {
+    title: `${l.year} ${l.brand} ${l.model}`,
+    description: `${l.year} ${l.brand} ${l.model}, ${formatKm(l.kmDriven)} driven, in ${l.city}. Asking ${formatNpr(l.priceNpr)}${l.negotiable ? " (negotiable)" : ""}.`,
+  };
 }
 
 export default async function ListingPage({ params, searchParams }: PageProps<"/listings/[id]">) {
@@ -36,13 +40,13 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
   const sellerName = l.seller.name ?? l.seller.email.split("@")[0];
   const specs: [string, string][] = [
     ["Type", TYPE_LABEL[l.type]], ["Brand", l.brand], ["Model", l.model], ["Year", String(l.year)],
-    ["Driven", formatKm(l.kmDriven)], ["Owners", String(l.ownerCount)], ["Bluebook", l.bluebookOk ? "Up to date" : "Not confirmed"],
+    ["Driven", formatKm(l.kmDriven)], ["Owners", String(l.ownerCount)], ["Bluebook", l.bluebookOk ? "Seller says up to date" : "Not stated by seller"],
     ["Location", l.city],
   ];
   const wa = `https://wa.me/${l.phone}?text=${encodeURIComponent(`Hi, is your ${l.brand} ${l.model} still available?`)}`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-6 py-8">
       {sp.posted && <Banner tone="ok">Your ad is posted and waiting for review. It will go live as soon as it is approved.</Banner>}
       {sp.edited && <Banner tone="ok">Changes saved. The ad will be reviewed again before it shows publicly.</Banner>}
       {l.status === "PENDING" && !sp.posted && !sp.edited && <Banner tone="warn">This ad is waiting for review and is only visible to you{isAdmin && !isOwner ? " and admins" : ""}.</Banner>}
@@ -53,25 +57,25 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
         <div>
           <Gallery images={l.images.map((i) => i.url)} alt={l.title} />
 
-          <h1 className="mt-6 text-2xl font-bold">{l.title}</h1>
-          <p className="mt-1 text-sm text-muted">Posted {timeAgo(l.createdAt)} · {l.city}</p>
+          <h1 className="mt-6 font-display text-3xl font-semibold">{l.title}</h1>
+          <p className="mt-1 text-sm text-muted">Posted {timeAgo(l.createdAt)} in {l.city}</p>
 
-          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-line py-5 sm:grid-cols-4">
+          <dl className="mt-6 grid grid-cols-2 gap-4 rounded-lg border border-line bg-surface p-5 sm:grid-cols-4">
             {specs.map(([k, v]) => (
               <div key={k}>
-                <dt className="text-xs uppercase tracking-wide text-muted">{k}</dt>
+                <dt className="text-sm text-muted">{k}</dt>
                 <dd className="mt-0.5 font-medium">{v}</dd>
               </div>
             ))}
           </dl>
 
-          <h2 className="mt-6 text-lg font-semibold">Description</h2>
-          <p className="mt-2 whitespace-pre-line leading-relaxed">{l.description}</p>
+          <h2 className="font-display mt-8 text-2xl font-semibold">Description</h2>
+          <p className="mt-2 whitespace-pre-line leading-[1.7]">{l.description}</p>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-lg border border-line bg-card p-5">
-            <div className="text-3xl font-bold">{formatNpr(l.priceNpr)}</div>
+          <div className="rounded-lg border border-line bg-surface p-6">
+            <div className="font-display text-4xl">{formatNpr(l.priceNpr)}</div>
             <div className="text-sm text-muted">{l.negotiable ? "Negotiable" : "Fixed price"}</div>
 
             {isOwner ? (
@@ -107,13 +111,13 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             ) : null}
           </div>
 
-          <div className="rounded-lg border border-line bg-card p-5 text-sm">
+          <div className="rounded-lg border border-line bg-surface p-5 text-sm ">
             <div className="font-medium">{sellerName}</div>
             <div className="text-muted">Member since {l.seller.createdAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
           </div>
 
-          <div className="rounded-lg bg-wash p-4 text-sm text-muted">
-            Check the bluebook and owner’s citizenship before paying. Never send money in advance.
+          <div className="rounded-lg bg-surface-sunk p-4 text-sm text-muted">
+            We do not inspect bikes or verify listings. Check the bluebook and the owner’s citizenship before paying, and never send money in advance.
           </div>
 
           {user && !isOwner && l.status === "ACTIVE" && <ReportButton id={l.id} />}
@@ -132,5 +136,5 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
 
 function Banner({ tone, children }: { tone: "ok" | "warn" | "bad"; children: React.ReactNode }) {
   const c = { ok: "border-ok/30 bg-ok/5 text-ok", warn: "border-warn/30 bg-warn/5 text-warn", bad: "border-brand/30 bg-brand/5 text-brand" }[tone];
-  return <div className={`mb-6 rounded-md border px-4 py-3 text-sm ${c}`}>{children}</div>;
+  return <div className={`mb-6 rounded-xl border px-4 py-3 text-sm ${c}`}>{children}</div>;
 }

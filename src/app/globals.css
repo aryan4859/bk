@@ -1,45 +1,105 @@
 @import "tailwindcss";
 
+/* ============ tokens ============ */
 @theme {
-  --color-paper: #faf8f4;
-  --color-card: #ffffff;
-  --color-ink: #1e1a16;
-  --color-muted: #6f675d;
-  --color-line: #e5dfd4;
-  --color-wash: #f2eee6;
-  --color-brand: #a93226;
-  --color-brand-dark: #8a281e;
-  --color-ok: #2f6b3f;
+  --color-ink: #16181d;
+  --color-muted: #5b606a;
+  --color-line: #dedfe2;
+  --color-field: #7a7f89;
+  --color-wash: #f2f2ef;
+  --color-accent: #f5b301;
+  --color-accent-dark: #d99f00;
+  --color-brand: #b3261e;
+  --color-brand-dark: #8f1e18;
+  --color-ok: #1f6b3a;
   --color-warn: #8a5a00;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+  --font-body: var(--font-public), ui-sans-serif, system-ui, sans-serif;
+  --font-deva: var(--font-deva), sans-serif;
+
+  /* the only shadow: for layers that float above the page (menus, toasts, banners) */
+  --shadow-pop: 0 1px 2px rgb(22 24 29 / 0.08), 0 12px 32px -8px rgb(22 24 29 / 0.28);
 }
 
-html {
-  background: var(--color-paper);
-  color: var(--color-ink);
+/* ============ base ============ */
+@layer base {
+  html {
+    overflow-x: clip;
+    background: #fff;
+    color: var(--color-ink);
+  }
+  body {
+    font-family: var(--font-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-stretch: 85%;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  :is(a, button, summary):active { opacity: 0.8; }
+  summary { cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
 }
 
-body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
+/* ============ surfaces ============ */
+@utility bg-surface { background-color: #fff; }
+@utility bg-surface-sunk { background-color: var(--color-wash); }
 
+/* ============ controls ============ */
 @utility input {
-  @apply w-full rounded-md border border-line bg-card px-3 py-2 text-[15px] outline-none placeholder:text-muted/60 focus:border-ink;
+  @apply min-h-11 w-full rounded-md border border-field bg-white px-3 py-2 text-base outline-none placeholder:text-muted hover:border-ink focus:border-ink focus-visible:ring-2 focus-visible:ring-ink/25 sm:text-[15px];
 }
-
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-[15px] font-medium transition-colors disabled:opacity-50;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-[15px] font-semibold transition-transform active:scale-[0.97] disabled:opacity-50;
 }
-
 @utility btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 text-[15px] font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50;
+  @apply btn bg-accent text-ink hover:bg-accent-dark;
 }
-
 @utility btn-outline {
-  @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-card px-4 py-2 text-[15px] font-medium transition-colors hover:border-ink disabled:opacity-50;
+  @apply btn border border-ink bg-white text-ink hover:bg-wash;
 }
-
 @utility label {
   @apply mb-1 block text-sm font-medium;
 }
+@utility font-display {
+  font-family: var(--font-display);
+  font-stretch: 85%;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ============ photos ============ */
+/* A faint ink tint so uploaded photos of every colour sit calmly on the white page. */
+@utility img-treated {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(22 24 29 / 0) 60%, rgb(22 24 29 / 0.28) 100%);
+  }
+}
+
+/* ============ accessibility ============ */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -4rem;
+  z-index: 100;
+  border-radius: 0.375rem;
+  background: var(--color-ink);
+  padding: 0.6rem 1rem;
+  color: #fff;
+}
+.skip-link:focus { top: 0.75rem; }

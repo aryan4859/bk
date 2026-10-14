@@ -19,9 +19,9 @@ export function AdminNav({ pending, reports }: { pending: number; reports: numbe
         const active = href === "/admin" ? path === href : path.startsWith(href);
         const n = badge(href);
         return (
-          <Link key={href} href={href} className={`flex items-center justify-between gap-3 whitespace-nowrap rounded-md px-3 py-2 text-[15px] ${active ? "bg-ink text-white" : "text-muted hover:bg-wash hover:text-ink"}`}>
+          <Link key={href} href={href} className={`flex items-center justify-between gap-3 whitespace-nowrap rounded-md px-3 py-2 text-[15px] ${active ? "bg-ink text-white" : "text-muted hover:bg-surface-sunk hover:text-ink"}`}>
             {label}
-            {n > 0 && <span className={`rounded-full px-2 text-xs ${active ? "bg-white/20" : "bg-brand text-white"}`}>{n}</span>}
+            {n > 0 && <span className={`rounded-full px-2 text-xs ${active ? "bg-white/20" : "bg-accent text-ink"}`}>{n}</span>}
           </Link>
         );
       })}

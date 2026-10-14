@@ -36,7 +36,7 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
         </form>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-lg border border-line bg-card">
+      <div className="mt-5 overflow-x-auto rounded-lg border border-line bg-surface">
         <table className="w-full text-left text-[15px]">
           <thead className="border-b border-line text-sm text-muted">
             <tr>

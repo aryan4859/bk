@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { BRANDS, CITIES, MAX_IMAGES } from "@/lib/constants";
 import type { FormState } from "@/lib/actions";
@@ -50,7 +51,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
         <input
           type="file" name="images" accept="image/jpeg,image/png,image/webp" multiple
           onChange={(e) => setPreviews(Array.from(e.target.files ?? []).map((f) => URL.createObjectURL(f)))}
-          className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-line file:bg-card file:px-3 file:py-2 file:text-sm hover:file:border-ink"
+          aria-label="Choose photos" className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-sm hover:file:border-ink"
         />
         {previews.length > 0 && (
           <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
@@ -99,7 +100,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
           <input id="ownerCount" name="ownerCount" type="number" min={1} max={10} defaultValue={v("ownerCount", initial?.ownerCount ?? 1)} className="input" />
         </div>
         <label className="flex items-center gap-2 text-[15px] sm:col-span-2">
-          <input type="checkbox" name="bluebookOk" defaultChecked={checked("bluebookOk", initial?.bluebookOk ?? false)} /> Bluebook is up to date and I have it with me
+          <input type="checkbox" name="bluebookOk" defaultChecked={checked("bluebookOk", initial?.bluebookOk ?? false)} /> The bluebook is up to date and I have it with me
         </label>
       </fieldset>
 
@@ -142,8 +143,17 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
         </div>
       </fieldset>
 
+      <div>
+        <label className="flex items-start gap-2 text-[15px]">
+          <input type="checkbox" name="confirm" required className="mt-1 size-4 shrink-0 accent-brand" />
+          <span>I own this bike or am allowed to sell it, and the details and photos are accurate. I agree to the <Link href="/terms" target="_blank" className="text-brand underline">terms</Link> and <Link href="/privacy" target="_blank" className="text-brand underline">privacy policy</Link>.</span>
+        </label>
+        {err("confirm")}
+        <p className="mt-2 text-sm text-muted">Your mobile number is shown to logged-in users who view your ad. Photos and details are public.</p>
+      </div>
+
       <div className="flex items-center gap-4">
-        <button disabled={pending} className="btn-primary px-6">{pending ? "Saving…" : submitLabel}</button>
+        <button type="submit" disabled={pending} className="btn-primary px-6">{pending ? "Saving…" : submitLabel}</button>
         <span className="text-sm text-muted">New and edited ads are reviewed before they go live.</span>
       </div>
     </form>

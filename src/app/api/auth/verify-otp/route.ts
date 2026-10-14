@@ -1,8 +1,10 @@
 import { timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { flash } from "@/lib/flash";
 import { createSession } from "@/lib/session";
 import { hashCode } from "@/lib/otp";
+import { MINUTE, clientIp, rateLimit } from "@/lib/ratelimit";
 
 const body = z.object({ email: z.string().email().toLowerCase(), code: z.string().length(6) });
 
@@ -10,6 +12,9 @@ export async function POST(req: Request) {
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Invalid input" }, { status: 400 });
   const { email, code } = parsed.data;
+
+  if (!(await rateLimit(`otp-verify:ip:${await clientIp()}`, 20, 10 * MINUTE)))
+    return Response.json({ error: "Too many attempts. Try again later." }, { status: 429 });
 
   const otp = await db.otp.findFirst({ where: { email }, orderBy: { createdAt: "desc" } });
   if (!otp || otp.expiresAt < new Date() || otp.attempts >= 5)
@@ -29,5 +34,6 @@ export async function POST(req: Request) {
   const role = admins.includes(email) ? "ADMIN" : "USER";
   const user = await db.user.upsert({ where: { email }, update: { role }, create: { email, role } });
   await createSession(user.id);
+  await flash("You are logged in.");
   return Response.json({ ok: true });
 }

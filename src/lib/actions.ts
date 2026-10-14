@@ -5,10 +5,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin, requireUser } from "./auth";
+import { flash } from "./flash";
 import { BRANDS, CITIES, MAX_IMAGES } from "./constants";
 import { db } from "./db";
 import { saveImage } from "./images";
 import { normalizePhone } from "./format";
+import { HOUR, MINUTE, rateLimit } from "./ratelimit";
 
 export type FormState =
   | { error?: string; fieldErrors?: Record<string, string>; values?: Record<string, string> }
@@ -22,6 +24,7 @@ const valuesOf = (fd: FormData) =>
 
 export async function logout() {
   (await cookies()).delete("session");
+  await flash("You have been logged out.");
   redirect("/");
 }
 
@@ -29,6 +32,7 @@ export async function updateName(formData: FormData) {
   const user = await requireUser("/my");
   const name = String(formData.get("name") ?? "").trim().slice(0, 60);
   await db.user.update({ where: { id: user.id }, data: { name: name || null } });
+  await flash(name ? "Display name saved." : "Display name cleared.");
   revalidatePath("/", "layout");
 }
 
@@ -46,9 +50,11 @@ const listingSchema = z.object({
   city: z.enum(CITIES),
   phone: z.string().transform(normalizePhone).refine((p) => /^977(98|97|96)\d{8}$/.test(p), "Enter a valid Nepali mobile number (98XXXXXXXX)"),
   bluebookOk: z.boolean(),
+  confirm: z.literal(true, "Please confirm this before posting"),
   title: z.string().trim().min(5, "Add a short title (at least 5 characters)").max(100),
   description: z.string().trim().min(20, "Describe the condition in at least 20 characters").max(3000),
-});
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+}).transform(({ confirm, ...rest }) => rest);
 
 function parseListing(formData: FormData) {
   return listingSchema.safeParse({
@@ -63,6 +69,7 @@ function parseListing(formData: FormData) {
     city: formData.get("city"),
     phone: String(formData.get("phone") ?? ""),
     bluebookOk: formData.get("bluebookOk") === "on",
+    confirm: formData.get("confirm") === "on",
     title: formData.get("title"),
     description: formData.get("description"),
   });
@@ -80,6 +87,7 @@ function newFiles(formData: FormData) {
 
 export async function createListing(_: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser("/sell");
+  if (!(await rateLimit(`listing:create:${user.id}`, 5, HOUR))) return { error: "You are posting too fast. Try again in a while.", values: valuesOf(formData) };
   const parsed = parseListing(formData);
   if (!parsed.success) return fieldErrors(parsed.error, formData);
   const files = newFiles(formData);
@@ -107,6 +115,7 @@ export async function updateListing(id: string, _: FormState, formData: FormData
   const user = await requireUser(`/listings/${id}/edit`);
   const existing = await db.listing.findUnique({ where: { id }, include: { images: true } });
   if (!existing || existing.sellerId !== user.id) return { error: "Listing not found." };
+  if (!(await rateLimit(`listing:edit:${user.id}`, 20, HOUR))) return { error: "Too many edits. Try again in a while.", values: valuesOf(formData) };
 
   const parsed = parseListing(formData);
   if (!parsed.success) return fieldErrors(parsed.error, formData);
@@ -141,8 +150,9 @@ export async function setSold(formData: FormData) {
   const id = String(formData.get("id"));
   const sold = formData.get("sold") === "1";
   const l = await db.listing.findUnique({ where: { id } });
-  if (!l || l.sellerId !== user.id || (l.status !== "ACTIVE" && l.status !== "SOLD")) return;
+  if (!l || l.sellerId !== user.id || (l.status !== "ACTIVE" && l.status !== "SOLD")) return flash("We could not update that ad.", "error");
   await db.listing.update({ where: { id }, data: { status: sold ? "SOLD" : "ACTIVE" } });
+  await flash(sold ? "Marked as sold." : "Marked as available.");
   revalidatePath("/my");
 }
 
@@ -150,7 +160,7 @@ export async function deleteListing(formData: FormData) {
   const user = await requireUser("/my");
   const id = String(formData.get("id"));
   const l = await db.listing.findUnique({ where: { id } });
-  if (!l || (l.sellerId !== user.id && user.role !== "ADMIN")) return;
+  if (!l || (l.sellerId !== user.id && user.role !== "ADMIN")) return flash("We could not delete that ad.", "error");
   // threads/reports reference the listing without cascade, so clear them first
   await db.$transaction([
     db.message.deleteMany({ where: { thread: { listingId: id } } }),
@@ -158,6 +168,7 @@ export async function deleteListing(formData: FormData) {
     db.report.deleteMany({ where: { listingId: id } }),
     db.listing.delete({ where: { id } }),
   ]);
+  await flash("Ad deleted.");
   revalidatePath("/my");
   revalidatePath("/admin", "layout");
   if (formData.get("redirect")) redirect(String(formData.get("redirect")));
@@ -170,6 +181,7 @@ export async function toggleFavorite(formData: FormData) {
   const has = await db.favorite.findUnique({ where: key });
   if (has) await db.favorite.delete({ where: key });
   else await db.favorite.create({ data: { userId: user.id, listingId } });
+  await flash(has ? "Removed from saved bikes." : "Saved. Find it under Saved.");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath("/saved");
 }
@@ -179,8 +191,15 @@ export async function toggleFavorite(formData: FormData) {
 export async function startThread(formData: FormData) {
   const listingId = String(formData.get("id"));
   const user = await requireUser(`/listings/${listingId}`);
+  if (!(await rateLimit(`thread:start:${user.id}`, 20, HOUR))) {
+    await flash("You have started too many conversations. Try again later.", "error");
+    redirect(`/listings/${listingId}`);
+  }
   const listing = await db.listing.findUnique({ where: { id: listingId } });
-  if (!listing || listing.status !== "ACTIVE" || listing.sellerId === user.id) redirect(`/listings/${listingId}`);
+  if (!listing || listing.status !== "ACTIVE" || listing.sellerId === user.id) {
+    await flash("You cannot message about this ad.", "error");
+    redirect(`/listings/${listingId}`);
+  }
   const thread = await db.thread.upsert({
     where: { listingId_buyerId: { listingId, buyerId: user.id } },
     update: {},
@@ -194,9 +213,13 @@ export async function sendMessage(threadId: string, _: FormState, formData: Form
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return undefined;
   if (body.length > 1000) return { error: "Message is too long." };
+  if (!(await rateLimit(`msg:${user.id}`, 30, MINUTE))) return { error: "You are sending messages too fast." };
   const t = await db.thread.findUnique({ where: { id: threadId }, include: { listing: true } });
   if (!t || (t.buyerId !== user.id && t.listing.sellerId !== user.id)) return { error: "Conversation not found." };
-  await db.message.create({ data: { threadId, senderId: user.id, body } });
+  await db.$transaction([
+    db.message.create({ data: { threadId, senderId: user.id, body } }),
+    db.thread.update({ where: { id: threadId }, data: t.buyerId === user.id ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() } }),
+  ]);
   revalidatePath(`/inbox/${threadId}`);
   return undefined;
 }
@@ -208,6 +231,7 @@ export async function reportListing(_: FormState, formData: FormData): Promise<F
   const user = await requireUser(`/listings/${id}`);
   const reason = String(formData.get("reason") ?? "").trim();
   if (reason.length < 5) return { error: "Tell us briefly what is wrong." };
+  if (!(await rateLimit(`report:${user.id}`, 10, HOUR))) return { error: "Too many reports. Try again later." };
   await db.report.create({ data: { listingId: id, reporterId: user.id, reason: reason.slice(0, 500) } });
   return { error: undefined, fieldErrors: { done: "1" } };
 }
@@ -215,6 +239,7 @@ export async function reportListing(_: FormState, formData: FormData): Promise<F
 export async function approveListing(formData: FormData) {
   await requireAdmin();
   await db.listing.update({ where: { id: String(formData.get("id")) }, data: { status: "ACTIVE", rejectReason: null } });
+  await flash("Ad approved and now live.");
   revalidatePath("/admin", "layout");
 }
 
@@ -222,12 +247,14 @@ export async function rejectListing(formData: FormData) {
   await requireAdmin();
   const reason = String(formData.get("reason") ?? "").trim().slice(0, 300) || "Does not meet our listing guidelines.";
   await db.listing.update({ where: { id: String(formData.get("id")) }, data: { status: "REJECTED", rejectReason: reason } });
+  await flash("Ad rejected.");
   revalidatePath("/admin", "layout");
 }
 
 export async function resolveReport(formData: FormData) {
   await requireAdmin();
   await db.report.update({ where: { id: String(formData.get("id")) }, data: { resolved: true } });
+  await flash("Report marked as resolved.");
   revalidatePath("/admin", "layout");
 }
 
@@ -235,9 +262,9 @@ export async function setBanned(formData: FormData) {
   const admin = await requireAdmin();
   const id = String(formData.get("id"));
   const ban = formData.get("ban") === "1";
-  if (id === admin.id) return;
+  if (id === admin.id) return flash("You cannot suspend yourself.", "error");
   const target = await db.user.findUnique({ where: { id } });
-  if (!target || target.role === "ADMIN") return;
+  if (!target || target.role === "ADMIN") return flash("That account cannot be suspended.", "error");
   await db.$transaction([
     db.user.update({ where: { id }, data: { banned: ban } }),
     ...(ban
@@ -247,14 +274,16 @@ export async function setBanned(formData: FormData) {
         })]
       : []),
   ]);
+  await flash(ban ? "Account suspended." : "Account restored.");
   revalidatePath("/admin", "layout");
 }
 
 export async function setRole(formData: FormData) {
   const admin = await requireAdmin();
   const id = String(formData.get("id"));
-  if (id === admin.id) return;
+  if (id === admin.id) return flash("You cannot change your own role.", "error");
   const role = formData.get("role") === "ADMIN" ? "ADMIN" : "USER";
   await db.user.update({ where: { id }, data: { role } });
+  await flash(role === "ADMIN" ? "Made admin." : "Admin removed.");
   revalidatePath("/admin", "layout");
 }
