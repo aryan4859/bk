@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
-import { BRANDS, CITIES } from "./constants";
+import { BRANDS, BUDGETS, CITIES } from "./constants";
 
 export const PAGE_SIZE = 12;
 
@@ -9,13 +9,16 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 const num = (v: string) => (v && /^\d+$/.test(v) ? Number(v) : undefined);
 
 export function parseFilters(sp: SP) {
+  // `budget=<key>` is a shorthand for a price band; explicit minPrice/maxPrice win over it
+  const band = BUDGETS.find((b) => b.key === one(sp.budget));
   return {
     q: one(sp.q).trim().slice(0, 80),
     type: one(sp.type),
     brand: (BRANDS as readonly string[]).includes(one(sp.brand)) ? one(sp.brand) : "",
+    model: one(sp.model).trim().slice(0, 60),
     city: (CITIES as readonly string[]).includes(one(sp.city)) ? one(sp.city) : "",
-    minPrice: one(sp.minPrice),
-    maxPrice: one(sp.maxPrice),
+    minPrice: one(sp.minPrice) || (band?.min !== undefined ? String(band.min) : ""),
+    maxPrice: one(sp.maxPrice) || (band?.max !== undefined ? String(band.max) : ""),
     minYear: one(sp.minYear),
     maxKm: one(sp.maxKm),
     sort: one(sp.sort) || "newest",
@@ -25,13 +28,14 @@ export function parseFilters(sp: SP) {
 
 export type Filters = ReturnType<typeof parseFilters>;
 
-const FILTER_KEYS = ["q", "type", "brand", "city", "minPrice", "maxPrice", "minYear", "maxKm"] as const;
+const FILTER_KEYS = ["q", "type", "brand", "model", "city", "minPrice", "maxPrice", "minYear", "maxKm"] as const;
 
 /** Where clause for a set of filters. Only ever matches live ads. */
 export function buildWhere(f: Filters): Prisma.ListingWhereInput {
   const where: Prisma.ListingWhereInput = { status: "ACTIVE" };
   if (f.type === "MOTORCYCLE" || f.type === "SCOOTER") where.type = f.type;
   if (f.brand) where.brand = f.brand;
+  if (f.model) where.model = { contains: f.model, mode: "insensitive" };
   if (f.city) where.city = f.city;
   const price = { gte: num(f.minPrice), lte: num(f.maxPrice) };
   if (price.gte !== undefined || price.lte !== undefined) where.priceNpr = price;
@@ -68,6 +72,7 @@ export function describeFilters(f: Filters): string {
     f.q && `"${f.q}"`,
     f.type === "MOTORCYCLE" ? "Motorcycle" : f.type === "SCOOTER" ? "Scooter" : "",
     f.brand,
+    f.model,
     f.city,
     num(f.minPrice) !== undefined && `from Rs. ${f.minPrice}`,
     num(f.maxPrice) !== undefined && `under Rs. ${f.maxPrice}`,

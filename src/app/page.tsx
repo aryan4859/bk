@@ -1,9 +1,12 @@
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
+import { BrandGrid } from "@/components/BrandGrid";
+import { BudgetBands } from "@/components/BudgetBands";
 import { HeroScene } from "@/components/HeroScene";
+import { HeroSearch } from "@/components/HeroSearch";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { BRANDS, CITIES } from "@/lib/constants";
+import { BRANDS, BUDGETS } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { FEATURED_MAX, cardSelect, sellerRatings } from "@/lib/queries";
 
@@ -17,18 +20,28 @@ const STEPS = [
 // database on every visit to the busiest page.
 const getHomeStats = unstable_cache(
   async () => {
-    const [count, cities] = await Promise.all([
-      db.listing.count({ where: { status: "ACTIVE" } }),
-      db.listing.groupBy({ by: ["city"], where: { status: "ACTIVE" }, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 8 }),
+    const live = { status: "ACTIVE" } as const;
+    const [count, cities, brands, models, budgetCounts] = await Promise.all([
+      db.listing.count({ where: live }),
+      db.listing.groupBy({ by: ["city"], where: live, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 8 }),
+      db.listing.groupBy({ by: ["brand"], where: live, _count: { brand: true } }),
+      db.listing.groupBy({ by: ["brand", "model"], where: live, orderBy: [{ brand: "asc" }, { model: "asc" }] }),
+      Promise.all(BUDGETS.map((b) => db.listing.count({ where: { ...live, priceNpr: { gte: b.min, lte: b.max } } }))),
     ]);
-    return { count, cities };
+    const modelsByBrand: Record<string, string[]> = {};
+    for (const m of models) (modelsByBrand[m.brand] ??= []).push(m.model);
+    return {
+      count, cities, modelsByBrand,
+      brandCounts: Object.fromEntries(brands.map((b) => [b.brand, b._count.brand])) as Record<string, number>,
+      budgets: BUDGETS.map((b, i) => ({ key: b.key, label: b.label, count: budgetCounts[i] })),
+    };
   },
   ["home-stats"],
   { revalidate: 60 },
 );
 
 export default async function Home() {
-  const [featured, latest, { count, cities }] = await Promise.all([
+  const [featured, latest, { count, cities, brandCounts, modelsByBrand, budgets }] = await Promise.all([
     db.listing.findMany({ where: { status: "ACTIVE", featuredUntil: { gt: new Date() } }, orderBy: { featuredUntil: "desc" }, take: FEATURED_MAX, select: cardSelect }),
     db.listing.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" }, take: 8, select: cardSelect }),
     getHomeStats(),
@@ -57,18 +70,7 @@ export default async function Home() {
             </div>
           )}
           <div>
-            <form action="/listings" className="grid gap-3 sm:grid-cols-2">
-              <input name="q" placeholder="Pulsar, Duke, Dio" className="input sm:col-span-2" aria-label="Search" />
-              <select name="brand" className="input" aria-label="Brand" defaultValue="">
-                <option value="">Any brand</option>
-                {BRANDS.map((b) => <option key={b}>{b}</option>)}
-              </select>
-              <select name="city" className="input" aria-label="City" defaultValue="">
-                <option value="">All Nepal</option>
-                {CITIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-              <button className="btn-primary px-8 sm:col-span-2 lg:col-span-1 lg:justify-self-start">Search</button>
-            </form>
+            <HeroSearch modelsByBrand={modelsByBrand} />
             <p className="mt-4 text-sm text-muted">
               Or browse <Link href="/listings?type=MOTORCYCLE" className="link">motorcycles</Link> or{" "}
               <Link href="/listings?type=SCOOTER" className="link">scooters</Link>.
@@ -104,20 +106,20 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="bg-surface py-20 sm:py-24">
-        <div className="mx-auto grid max-w-6xl gap-20 px-4 sm:px-6 md:grid-cols-2 md:gap-12">
-          <div>
-            <h2 data-reveal className="text-[32px] sm:text-[44px]">Brands</h2>
-            <ul data-reveal style={{ "--i": 1 } as React.CSSProperties} className="mt-6 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-              {BRANDS.filter((b) => b !== "Other").map((b) => (
-                <li key={b}><Link href={`/listings?brand=${encodeURIComponent(b)}`} className="inline-block py-1.5 text-ink underline-offset-4 hover:underline">{b}</Link></li>
-              ))}
-            </ul>
+      <BudgetBands bands={budgets} />
+
+      <section className="bg-surface py-20 sm:py-24" aria-labelledby="brands">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex items-end justify-between gap-4">
+            <h2 id="brands" data-reveal className="text-[32px] sm:text-[44px]">Popular brands</h2>
+            <Link href="/listings" className="link">See all bikes</Link>
           </div>
+          <BrandGrid brands={BRANDS.filter((b) => b !== "Other")} counts={brandCounts} />
+
           {cities.length > 0 && (
-            <div>
-              <h2 data-reveal style={{ "--i": 1 } as React.CSSProperties} className="text-[32px] sm:text-[44px]">Cities</h2>
-              <ul data-reveal style={{ "--i": 2 } as React.CSSProperties} className="mt-6 grid grid-cols-2 gap-x-4 gap-y-1">
+            <div className="mt-16">
+              <h2 data-reveal className="text-[32px] sm:text-[44px]">Cities</h2>
+              <ul data-reveal style={{ "--i": 1 } as React.CSSProperties} className="mt-6 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
                 {cities.map((c) => (
                   <li key={c.city}>
                     <Link href={`/listings?city=${encodeURIComponent(c.city)}`} className="inline-block py-1.5 text-ink underline-offset-4 hover:underline">

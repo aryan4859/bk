@@ -25,6 +25,10 @@ export function FilterForm({ f }: { f: Filters }) {
         </select>
       </div>
       <div>
+        <label className="label" htmlFor="model">Model</label>
+        <input id="model" name="model" defaultValue={f.model} placeholder="Pulsar, Activa…" className="input" />
+      </div>
+      <div>
         <label className="label" htmlFor="city">City</label>
         <select id="city" name="city" defaultValue={f.city} className="input">
           <option value="">Anywhere</option>

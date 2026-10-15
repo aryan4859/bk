@@ -50,6 +50,29 @@ describe("buildWhere", () => {
   });
 });
 
+describe("budget and model filters", () => {
+  it("turns a budget band into a price range", () => {
+    expect(parseFilters({ budget: "1l-2l" })).toMatchObject({ minPrice: "100000", maxPrice: "199999" });
+    expect(parseFilters({ budget: "under-1l" })).toMatchObject({ minPrice: "", maxPrice: "99999" });
+    expect(parseFilters({ budget: "over-5l" })).toMatchObject({ minPrice: "500000", maxPrice: "" });
+  });
+  it("ignores unknown bands and lets explicit prices win", () => {
+    expect(parseFilters({ budget: "free" })).toMatchObject({ minPrice: "", maxPrice: "" });
+    expect(parseFilters({ budget: "1l-2l", maxPrice: "150000" })).toMatchObject({ minPrice: "100000", maxPrice: "150000" });
+  });
+  it("bands never overlap, so a bike counts in exactly one", () => {
+    const w = (b: string) => buildWhere(parseFilters({ budget: b })).priceNpr as { gte?: number; lte?: number };
+    expect(w("under-1l").lte).toBe(99999);
+    expect(w("1l-2l")).toEqual({ gte: 100000, lte: 199999 });
+    expect(w("over-5l").gte).toBe(500000);
+  });
+  it("matches the model loosely and caps its length", () => {
+    expect(buildWhere(parseFilters({ model: "pulsar" })).model).toEqual({ contains: "pulsar", mode: "insensitive" });
+    expect(parseFilters({ model: "x".repeat(100) }).model).toHaveLength(60);
+    expect(filtersToQuery(parseFilters({ brand: "Bajaj", model: "Pulsar NS200", budget: "2l-3l" }))).toBe("brand=Bajaj&model=Pulsar+NS200&minPrice=200000&maxPrice=299999");
+  });
+});
+
 describe("saved-search query strings", () => {
   it("is empty when no filter is set (sort and page do not count)", () => {
     expect(filtersToQuery(parseFilters({ sort: "price_asc", page: "3" }))).toBe("");

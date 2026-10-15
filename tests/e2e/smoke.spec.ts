@@ -30,12 +30,33 @@ test.describe("public pages", () => {
     await expect(page.getByText(/\d+ for sale right now/)).toBeVisible();
   });
 
-  test("home search leads to filtered results", async ({ page }) => {
+  test("home search panel: type, brand, model and budget lead to filtered results", async ({ page }) => {
     await page.goto("/");
-    await page.getByLabel("Search").first().fill("pulsar");
-    await page.getByRole("button", { name: "Search" }).click();
-    await expect(page).toHaveURL(/\/listings\?q=pulsar/);
+    const models = page.locator("#hs-model");
+    const before = await models.locator("option").count();
+    await page.locator("#hs-brand").selectOption("Bajaj");
+    await expect(models.locator("option")).toHaveText(["Any model", "Pulsar NS200"]); // follows the brand
+    expect(before).toBeGreaterThan(2);
+    await models.selectOption("Pulsar NS200");
+    await page.locator("label", { hasText: "Motorcycles" }).click();
+    await page.locator("#hs-budget").selectOption("3l-5l");
+    await page.getByRole("button", { name: "Search bikes" }).click();
+    // empty fields (year) are left out of the address
+    await expect(page).toHaveURL(/\/listings\?type=MOTORCYCLE&brand=Bajaj&model=Pulsar\+NS200&budget=3l-5l$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("1 Bajaj bike");
     await expect(page.getByText("Bajaj Pulsar NS200").first()).toBeVisible();
+  });
+
+  test("explore by budget shows live counts and opens the matching band", async ({ page }) => {
+    await page.goto("/");
+    const band = page.locator("section[aria-labelledby=budget]");
+    await expect(band.getByRole("listitem")).toHaveCount(5);
+    const under1 = band.getByRole("link", { name: /Under Rs 1 lakh/ });
+    await expect(under1).toContainText(/1 bike|None right now/); // the Hero Splendor fixture is Rs 90,000 but pending
+    await band.getByRole("link", { name: /Rs 2 to 3 lakh/ }).click();
+    await expect(page).toHaveURL(/budget=2l-3l/);
+    const prices = await page.locator("a[href^='/listings/'] >> text=/^Rs\\./").allTextContents();
+    for (const p of prices) { const n = Number(p.replace(/\D/g, "")); expect(n).toBeGreaterThanOrEqual(200000); expect(n).toBeLessThanOrEqual(299999); }
   });
 });
 
