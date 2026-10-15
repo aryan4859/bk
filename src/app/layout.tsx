@@ -9,6 +9,7 @@ import { CurrentYear } from "@/components/CurrentYear";
 import { FooterWordmark } from "@/components/footer/FooterWordmark";
 import { WORDMARK } from "@/components/footer/wordmark-paths";
 import { MobileMenu } from "@/components/MobileMenu";
+import { Preloader, preloadScript } from "@/components/Preloader";
 import { Reveal } from "@/components/Reveal";
 import { ThemeToggle, themeScript } from "@/components/ThemeToggle";
 import { Toast } from "@/components/Toast";
@@ -46,8 +47,8 @@ async function Header() {
     <header className="sticky top-0 z-30 bg-canvas">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-8 sm:px-6">
         <Link href="/" className="flex items-baseline gap-2" aria-label={`${BUSINESS.siteName} home`}>
-          <span className="font-display text-[28px] leading-none text-ink">{BUSINESS.siteName}</span>
-          <span className="font-deva text-sm text-muted" aria-hidden>सवारी</span>
+          <span data-logo className="font-display text-[28px] leading-none text-ink">{BUSINESS.siteName}</span>
+          <span data-logo-sub className="font-deva text-sm text-muted" aria-hidden>सवारी</span>
         </Link>
         <nav aria-label="Main" className="hidden items-center gap-6 sm:flex">
           <Link href="/listings" className={navLink}>Browse</Link>
@@ -90,9 +91,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${serif.variable} ${sans.variable} ${deva.variable} h-full`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {WORDMARK.text === BUSINESS.siteName && <script dangerouslySetInnerHTML={{ __html: preloadScript }} />}
       </head>
       <body className="flex min-h-full flex-col">
         <a href="#main" className="skip-link">Skip to main content</a>
+        {WORDMARK.text === BUSINESS.siteName && <Preloader />}
         <Header />
         {flashMsg && <Toast key={flashMsg.id} flash={flashMsg} />}
         <main id="main" tabIndex={-1} className="flex-1 outline-none">{children}</main>

@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       ...(r2Host ? [{ protocol: "https" as const, hostname: r2Host }] : []),
     ],
   },
-  allowedDevOrigins: ["192.168.10.251"],
+  allowedDevOrigins: ["192.168.10.251", "192.168.1.219"],
   async headers() {
     return [
       {

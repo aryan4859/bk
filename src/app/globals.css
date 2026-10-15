@@ -223,3 +223,16 @@
 @media (prefers-reduced-motion: reduce) {
   .wordmark[data-state] path { stroke-dasharray: none; stroke-dashoffset: 0; fill-opacity: 1; animation: none; }
 }
+
+/* ============ preloader: the wordmark draws, then flies into the header logo ============ */
+.preloader { display: none; }
+html[data-preload] .preloader { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; }
+html[data-preload="leaving"] .preloader { pointer-events: none; }
+.preloader svg { transform-origin: 0 0; will-change: transform; }
+[data-logo], [data-logo-sub] { transition: opacity 300ms ease-out; }
+html[data-preload="run"] [data-logo], html[data-preload="run"] [data-logo-sub] { opacity: 0; }
+/* failsafe: if the page's script never runs (blocked or failed), the cover lifts and the logo returns on its own */
+html[data-preload="run"] .preloader { animation: preload-bail 0s 7s forwards; }
+html[data-preload="run"] [data-logo], html[data-preload="run"] [data-logo-sub] { animation: logo-bail 0s 7s forwards; }
+@keyframes preload-bail { to { visibility: hidden; } }
+@keyframes logo-bail { to { opacity: 1; } }
