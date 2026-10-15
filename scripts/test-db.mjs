@@ -7,5 +7,8 @@ let env = {};
 try { env = parse(readFileSync(".env")); } catch {}
 const base = new URL(process.env.DATABASE_URL ?? env.DATABASE_URL ?? "postgresql://motovo:motovo@localhost:5434/motovo");
 const test = new URL(base); test.pathname = "/motovo_test";
+if (!process.env.TEST_DATABASE_URL && !["localhost", "127.0.0.1", "::1"].includes(test.hostname)) {
+  throw new Error(`Refusing to set up the test database on ${test.hostname}. Point DATABASE_URL at the local database or set TEST_DATABASE_URL.`);
+}
 const url = process.env.TEST_DATABASE_URL ?? test.toString();
 execSync("npx prisma migrate deploy", { stdio: "inherit", env: { ...process.env, DATABASE_URL: url } });

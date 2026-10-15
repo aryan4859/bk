@@ -16,5 +16,9 @@ export function testDatabaseUrl(): string {
   if (process.env.TEST_DATABASE_URL) return process.env.TEST_DATABASE_URL;
   const url = new URL(process.env.DATABASE_URL ?? projectEnv().DATABASE_URL ?? "postgresql://motovo:motovo@localhost:5434/motovo");
   url.pathname = "/motovo_test";
+  // never let tests (which TRUNCATE tables) reach a remote server, e.g. when .env points at production
+  if (!["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+    throw new Error(`Refusing to run tests against ${url.hostname}. Point DATABASE_URL at the local database or set TEST_DATABASE_URL.`);
+  }
   return url.toString();
 }

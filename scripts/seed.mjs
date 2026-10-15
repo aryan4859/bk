@@ -7,6 +7,10 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFi
 import { deflateSync } from "zlib";
 
 const db = new PrismaClient();
+// Seeding a database that is not on this machine means the ads appear on a public site: label them as
+// demos and give them numbers that can never ring a real phone.
+const dbHost = (() => { try { return new URL(process.env.DATABASE_URL ?? "").hostname; } catch { return "localhost"; } })();
+const LIVE = !["localhost", "127.0.0.1", "::1", ""].includes(dbHost);
 mkdirSync("uploads", { recursive: true });
 
 // deterministic pseudo-random so reruns look alike
@@ -165,12 +169,12 @@ for (let n = 0; n < COUNT; n++) {
   const l = await db.listing.create({
     data: {
       sellerId: seller.id, type, brand, model, year, kmDriven, priceNpr,
-      title: `${brand} ${model} ${year}${rnd() > 0.5 ? ", " + pick(["single owner", "well maintained", "excellent condition", "lady driven", "showroom condition"]) : ""}`,
+      title: `${LIVE ? "Demo: " : ""}${brand} ${model} ${year}${rnd() > 0.5 ? ", " + pick(["single owner", "well maintained", "excellent condition", "lady driven", "showroom condition"]) : ""}`,
       description: pick(NOTES),
       ownerCount: rnd() > 0.7 ? 2 : 1,
       negotiable: rnd() > 0.3,
       city: pick(CITIES),
-      phone: "97798" + String(int(10000000, 99999999)),
+      phone: LIVE ? "97798000000" + String(n % 10) : "97798" + String(int(10000000, 99999999)),
       bluebookOk: rnd() > 0.15,
       status,
       rejectReason: status === "REJECTED" ? pick(["Photos do not show the bike.", "Price looks like a typo."]) : null,
@@ -218,5 +222,6 @@ for (let i = 0; i < 3; i++) {
 }
 
 console.log(r2 ? `Photos: ${uploads} uploaded to R2 bucket "${r2.bucket}" under demo/` : "Photos: saved to ./uploads");
+console.log(LIVE ? `Database: ${dbHost} (live site: demo titles and fake phone numbers)` : "Database: local");
 console.log(`Seeded ${users.length} users, ${listings.length} listings (${live.length} live), 10 conversations, 3 reports, 3 featured ads, reviews`);
 await db.$disconnect();
