@@ -17,7 +17,13 @@ export async function loginAs(context: BrowserContext, userId: string, baseURL =
 }
 
 // Fails a test if the page logs console errors or throws (ignores failed image loads from missing seed photos).
-export const test = base.extend<{ consoleErrors: string[] }>({
+export const test = base.extend<{ consoleErrors: string[]; greet: boolean }>({
+  // the assistant's hello pops up 5.5 s into a visit; keep it out of tests that are not about it
+  greet: [false, { option: true }],
+  page: async ({ page, greet }, run) => {
+    if (!greet) await page.addInitScript(() => { try { sessionStorage.setItem("assistant-greeted", "1"); } catch {} });
+    await run(page);
+  },
   consoleErrors: async ({ page }, run) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));

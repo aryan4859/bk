@@ -11,7 +11,7 @@ export const BUSINESS = {
   country: "Nepal",
 };
 
-export const LEGAL_UPDATED = "14 October 2026";
+export const LEGAL_UPDATED = "15 October 2026";
 
 export const businessRows = (): [string, string][] =>
   ([

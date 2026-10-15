@@ -24,6 +24,7 @@ export function CookieSettingsButton({ className = "btn-outline", children = "Ch
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const first = useRef<HTMLButtonElement>(null);
+  const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!read()) queueMicrotask(() => setOpen(true));
@@ -34,11 +35,24 @@ export function CookieConsent() {
 
   useEffect(() => { if (open) first.current?.focus(); }, [open]);
 
+  // publish the notice's height so other bottom-corner controls (the assistant button) sit above it, not under it
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = box.current;
+    if (!open || !el) { root.style.removeProperty("--cookie-notice"); return; }
+    const sync = () => root.style.setProperty("--cookie-notice", `${Math.ceil(el.getBoundingClientRect().height) + 12}px`);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => { ro.disconnect(); root.style.removeProperty("--cookie-notice"); };
+  }, [open]);
+
   if (!open) return null;
   const choose = (v: "all" | "essential") => { write(v); setOpen(false); };
 
   return (
     <div
+      ref={box}
       role="dialog"
       aria-labelledby="cookie-title"
       aria-describedby="cookie-desc"

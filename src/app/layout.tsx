@@ -1,15 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, Noto_Serif_Devanagari } from "next/font/google";
 import Link from "next/link";
+import { Assistant } from "@/components/Assistant";
 import { BusinessValue } from "@/components/BusinessValue";
 import { CompareBar } from "@/components/Compare";
 import { CookieConsent, CookieSettingsButton } from "@/components/CookieConsent";
 import { CurrentYear } from "@/components/CurrentYear";
+import { FooterWordmark } from "@/components/footer/FooterWordmark";
+import { WORDMARK } from "@/components/footer/wordmark-paths";
 import { MobileMenu } from "@/components/MobileMenu";
 import { Reveal } from "@/components/Reveal";
 import { ThemeToggle, themeScript } from "@/components/ThemeToggle";
 import { Toast } from "@/components/Toast";
 import { logout } from "@/lib/actions";
+import { assistantConfigured } from "@/lib/assistant/chat";
 import { getUser } from "@/lib/auth";
 import { BUSINESS, businessRows } from "@/lib/business";
 import { readFlash } from "@/lib/flash";
@@ -118,12 +122,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </div>
           {/* the name returns at full width to close the page */}
           <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 overflow-hidden px-4 pb-6 sm:px-6">
-            <p aria-hidden className="font-display text-[26vw] leading-[0.8] tracking-[-0.04em] text-on-dark lg:text-[17rem]">{BUSINESS.siteName}</p>
+            {WORDMARK.text === BUSINESS.siteName
+              ? <FooterWordmark className="h-auto w-[78%] text-on-dark sm:w-[70%]" />
+              : <p aria-hidden className="font-display text-[26vw] leading-[0.8] tracking-[-0.04em] text-on-dark lg:text-[17rem]">{BUSINESS.siteName}</p>}
             <p className="shrink-0 pb-2 text-xs">© <CurrentYear /> {BUSINESS.siteName}</p>
           </div>
         </footer>
         <Reveal />
         <CompareBar />
+        {assistantConfigured() && <Assistant />}
         <CookieConsent />
       </body>
     </html>

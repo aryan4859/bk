@@ -87,6 +87,19 @@ test.describe("phone layout", () => {
     await expectNoSideScroll(page);
   });
 
+  test("the assistant opens as a full-screen sheet and closes again", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Ask Sawari" }).click();
+    const panel = page.getByRole("dialog", { name: "Sawari assistant" });
+    const box = (await panel.boundingBox())!;
+    const vp = page.viewportSize()!;
+    expect(Math.round(box.width)).toBe(vp.width);
+    expect(Math.round(box.height)).toBe(vp.height);
+    await expectNoSideScroll(page);
+    await panel.getByRole("button", { name: "Close assistant" }).click();
+    await expect(panel).toHaveCount(0);
+  });
+
   test("filters open from a button and apply", async ({ page }) => {
     await page.goto("/listings");
     await page.getByText("Filters and sorting").click();
