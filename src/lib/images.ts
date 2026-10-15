@@ -1,10 +1,9 @@
 import { randomBytes } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import sharp from "sharp";
 import { MAX_IMAGE_BYTES } from "./constants";
+import { putPhoto } from "./storage";
 
-export const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+export { UPLOAD_DIR } from "./storage";
 
 const EXT: Record<string, [string, number[]]> = {
   "image/jpeg": ["jpg", [0xff, 0xd8, 0xff]],
@@ -14,7 +13,7 @@ const EXT: Record<string, [string, number[]]> = {
 
 export const MIME: Record<string, string> = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" };
 
-/** Validates by magic bytes (not the client-claimed type) and stores to disk. Returns public URL. */
+/** Validates by magic bytes (not the client-claimed type), re-encodes and stores it (R2 in production). Returns its URL. */
 export async function saveImage(file: File): Promise<string> {
   if (file.size > MAX_IMAGE_BYTES) throw new Error("Each photo must be under 5 MB");
   const buf = Buffer.from(await file.arrayBuffer());
@@ -27,8 +26,11 @@ export async function saveImage(file: File): Promise<string> {
   } catch {
     throw new Error("That photo could not be read. Try a different file.");
   }
-  await mkdir(UPLOAD_DIR, { recursive: true });
   const name = `${randomBytes(12).toString("hex")}.webp`;
-  await writeFile(path.join(UPLOAD_DIR, name), out);
-  return `/uploads/${name}`;
+  try {
+    return await putPhoto(name, out, "image/webp");
+  } catch (e) {
+    console.error("photo upload failed:", (e as Error).message);
+    throw new Error("We could not save your photos. Please try again in a minute.");
+  }
 }

@@ -55,7 +55,7 @@ console.log(`seeded ${N_LISTINGS} listings`);
 
 // ---------- server ----------
 const server = spawn("npx", ["next", "start", "-p", String(PORT)], {
-  env: { ...process.env, DATABASE_URL: DB, AUTH_SECRET: SECRET, GOOGLE_CLIENT_ID: "", GOOGLE_CLIENT_SECRET: "", GOOGLE_REFRESH_TOKEN: "", GMAIL_SENDER: "" },
+  env: { ...process.env, DATABASE_URL: DB, AUTH_SECRET: SECRET, R2_ACCOUNT_ID: "", R2_ACCESS_KEY_ID: "", R2_SECRET_ACCESS_KEY: "", R2_BUCKET: "", R2_PUBLIC_URL: "", GOOGLE_CLIENT_ID: "", GOOGLE_CLIENT_SECRET: "", GOOGLE_REFRESH_TOKEN: "", GMAIL_SENDER: "" },
   stdio: "ignore", detached: true,
 });
 const stop = () => { try { process.kill(-server.pid); } catch {} };

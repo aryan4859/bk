@@ -1,9 +1,21 @@
 import type { NextConfig } from "next";
 
+const r2Host = (() => {
+  try { return process.env.R2_PUBLIC_URL ? new URL(process.env.R2_PUBLIC_URL).hostname : null; } catch { return null; }
+})();
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // fewer srcset candidates: smaller HTML and fewer variants for the optimizer to generate and cache
-  images: { deviceSizes: [480, 750, 1080, 1440], imageSizes: [128, 256, 384] },
+  images: {
+    deviceSizes: [480, 750, 1080, 1440],
+    imageSizes: [128, 256, 384],
+    // listing photos live in Cloudflare R2 (lib/storage.ts); a custom photo domain is picked up from R2_PUBLIC_URL
+    remotePatterns: [
+      { protocol: "https", hostname: "**.r2.dev" },
+      ...(r2Host ? [{ protocol: "https" as const, hostname: r2Host }] : []),
+    ],
+  },
   allowedDevOrigins: ["192.168.10.251"],
   async headers() {
     return [

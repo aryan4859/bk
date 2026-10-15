@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed.mjs",
+    "seed": "node --env-file-if-exists=.env scripts/seed.mjs",
     "photos": "node scripts/fetch-photos.mjs",
     "test": "node scripts/test-db.mjs && vitest run",
     "test:e2e": "node scripts/test-db.mjs && playwright test",
@@ -15,6 +15,7 @@
     "perf": "node scripts/perf.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
     "@prisma/client": "^6.19.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

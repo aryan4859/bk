@@ -1,8 +1,9 @@
-// Demo data for local development only: `npm run seed`.
+// Demo data: `npm run seed` (reads .env). Photos go to Cloudflare R2 when the R2_* variables are set.
 // Re-running replaces the previous demo data (everything tied to @demo.test accounts).
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import { randomBytes } from "crypto";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { deflateSync } from "zlib";
 
 const db = new PrismaClient();
@@ -43,7 +44,36 @@ function png([r, g, b]) {
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
 }
-function photo(rgb) {
+// ---- where photos go: Cloudflare R2 when configured (same R2_* variables as the app), else ./uploads ----
+const R2_VARS = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "R2_PUBLIC_URL"];
+const r2Set = R2_VARS.filter((k) => process.env[k]?.trim());
+if (r2Set.length && r2Set.length < R2_VARS.length) throw new Error(`R2 is half configured. Missing: ${R2_VARS.filter((k) => !r2Set.includes(k)).join(", ")}`);
+const r2 = r2Set.length
+  ? {
+      bucket: process.env.R2_BUCKET.trim(),
+      publicUrl: process.env.R2_PUBLIC_URL.trim().replace(/\/+$/, ""),
+      s3: new S3Client({
+        region: "auto",
+        endpoint: process.env.R2_ENDPOINT?.trim() || `https://${process.env.R2_ACCOUNT_ID.trim()}.r2.cloudflarestorage.com`,
+        forcePathStyle: true,
+        credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID.trim(), secretAccessKey: process.env.R2_SECRET_ACCESS_KEY.trim() },
+      }),
+    }
+  : null;
+// Demo photos get fixed keys under demo/ and are uploaded once per run, so every listing that uses a
+// photo shares one object and re-seeding overwrites instead of piling up copies in the bucket.
+const uploaded = new Map();
+let uploads = 0;
+async function demoObject(key, body, contentType) {
+  if (!uploaded.has(key)) {
+    uploaded.set(key, r2.s3.send(new PutObjectCommand({ Bucket: r2.bucket, Key: key, Body: body, ContentType: contentType, CacheControl: "public, max-age=86400" }))
+      .then(() => { uploads++; return `${r2.publicUrl}/${key}`; }));
+  }
+  return uploaded.get(key);
+}
+
+async function photo(rgb) {
+  if (r2) return demoObject(`demo/placeholder-${rgb.join("-")}.png`, png(rgb), "image/png");
   const name = randomBytes(12).toString("hex") + ".png";
   writeFileSync("uploads/" + name, png(rgb));
   return "/uploads/" + name;
@@ -55,7 +85,8 @@ const realPhotos = (type, brand) => {
   const slug = `${type}|${brand}`.toLowerCase().replace(/[^a-z]+/g, "-");
   return readdirSync(PHOTO_DIR).filter((f) => f.startsWith(slug + "-") && f.endsWith(".jpg"));
 };
-function realPhoto(file) {
+async function realPhoto(file) {
+  if (r2) return demoObject(`demo/${file}`, readFileSync(`${PHOTO_DIR}/${file}`), "image/jpeg");
   const name = randomBytes(12).toString("hex") + ".jpg";
   copyFileSync(`${PHOTO_DIR}/${file}`, "uploads/" + name);
   return "/uploads/" + name;
@@ -126,6 +157,11 @@ for (let n = 0; n < COUNT; n++) {
   const real = realPhotos(type, brand);
   const imgCount = real.length ? Math.min(real.length, int(1, 4)) : int(1, 4);
   const start = real.length ? int(0, real.length - 1) : 0;
+  // same order of random draws as before, so the demo data stays identical between runs
+  const urls = [];
+  for (let position = 0; position < imgCount; position++) {
+    urls.push(real.length ? await realPhoto(real[(start + position) % real.length]) : await photo(base.map((c) => Math.max(0, Math.min(255, c + int(-25, 25))))));
+  }
   const l = await db.listing.create({
     data: {
       sellerId: seller.id, type, brand, model, year, kmDriven, priceNpr,
@@ -139,7 +175,7 @@ for (let n = 0; n < COUNT; n++) {
       status,
       rejectReason: status === "REJECTED" ? pick(["Photos do not show the bike.", "Price looks like a typo."]) : null,
       createdAt: new Date(Date.now() - int(0, 30) * 86400_000 - int(0, 20) * 3600_000),
-      images: { create: Array.from({ length: imgCount }, (_, position) => ({ url: real.length ? realPhoto(real[(start + position) % real.length]) : photo(base.map((c) => Math.max(0, Math.min(255, c + int(-25, 25))))), position })) },
+      images: { create: urls.map((url, position) => ({ url, position })) },
     },
   });
   listings.push(l);
@@ -181,5 +217,6 @@ for (let i = 0; i < 3; i++) {
   await db.report.create({ data: { listingId: l.id, reporterId: reporter.id, reason: reasons[i] } });
 }
 
+console.log(r2 ? `Photos: ${uploads} uploaded to R2 bucket "${r2.bucket}" under demo/` : "Photos: saved to ./uploads");
 console.log(`Seeded ${users.length} users, ${listings.length} listings (${live.length} live), 10 conversations, 3 reports, 3 featured ads, reviews`);
 await db.$disconnect();
