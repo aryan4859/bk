@@ -30,8 +30,8 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Users <span className="text-lg font-normal text-muted">{total}</span></h1>
-        <form className="flex gap-2">
-          <input name="q" defaultValue={q} placeholder="Email or name" className="input w-60 py-1.5" />
+        <form className="flex w-full gap-2 sm:w-auto">
+          <input name="q" defaultValue={q} placeholder="Email or name" className="input min-w-0 flex-1 py-1.5 sm:w-60 sm:flex-none" />
           <button className="btn-outline py-1.5">Search</button>
         </form>
       </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Noto_Sans_Devanagari, Public_Sans } from "next/font/google";
 import Link from "next/link";
 import { BusinessValue } from "@/components/BusinessValue";
+import { CompareBar } from "@/components/Compare";
 import { CookieConsent, CookieSettingsButton } from "@/components/CookieConsent";
 import { CurrentYear } from "@/components/CurrentYear";
 import { MobileMenu } from "@/components/MobileMenu";
@@ -15,7 +16,7 @@ import "./globals.css";
 
 const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], axes: ["wdth"] });
 const publicSans = Public_Sans({ variable: "--font-public", subsets: ["latin"] });
-const deva = Noto_Sans_Devanagari({ variable: "--font-deva", subsets: ["devanagari"], weight: ["600"] });
+const deva = Noto_Sans_Devanagari({ variable: "--font-deva", subsets: ["devanagari"], weight: ["600"], preload: false });
 
 export const metadata: Metadata = {
   title: { default: `${BUSINESS.siteName}: used bikes and scooters in Nepal`, template: `%s · ${BUSINESS.siteName}` },
@@ -28,7 +29,7 @@ async function Header() {
   const navLink = "underline-offset-4 hover:underline";
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-8 sm:px-6">
         <Link href="/" className="flex items-baseline gap-2" aria-label={`${BUSINESS.siteName} home`}>
           <span className="font-display text-2xl">{BUSINESS.siteName}</span>
           <span className="font-[family-name:var(--font-deva)] text-sm font-semibold text-muted" aria-hidden>सवारी</span>
@@ -59,7 +60,7 @@ async function Header() {
               <Link href="/login" className={navLink}>Log in</Link>
             )}
           </div>
-          <Link href="/sell" className="btn-primary">Sell a bike</Link>
+          <Link href="/sell" className="btn-primary whitespace-nowrap px-3 sm:px-5">Sell<span className="hidden sm:inline">&nbsp;a bike</span></Link>
         </div>
       </div>
     </header>
@@ -103,6 +104,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <p className="mx-auto max-w-6xl px-6 pb-6 text-sm text-muted">Meet in a public place, check the bluebook and never pay in advance.</p>
           <div className="border-t border-line py-4 text-center text-xs text-muted">© <CurrentYear /> {BUSINESS.siteName}</div>
         </footer>
+        <CompareBar />
         <CookieConsent />
       </body>
     </html>

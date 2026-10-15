@@ -25,7 +25,10 @@ export function parseFilters(sp: SP) {
 
 export type Filters = ReturnType<typeof parseFilters>;
 
-export async function searchListings(f: Filters) {
+const FILTER_KEYS = ["q", "type", "brand", "city", "minPrice", "maxPrice", "minYear", "maxKm"] as const;
+
+/** Where clause for a set of filters. Only ever matches live ads. */
+export function buildWhere(f: Filters): Prisma.ListingWhereInput {
   const where: Prisma.ListingWhereInput = { status: "ACTIVE" };
   if (f.type === "MOTORCYCLE" || f.type === "SCOOTER") where.type = f.type;
   if (f.brand) where.brand = f.brand;
@@ -41,7 +44,50 @@ export async function searchListings(f: Filters) {
       [k]: { contains: f.q, mode: "insensitive" },
     })) as Prisma.ListingWhereInput[];
   }
+  return where;
+}
 
+/** Stable query string of the filters that narrow results (no sort/page); "" when nothing is set. */
+export function filtersToQuery(f: Filters): string {
+  const p = new URLSearchParams();
+  for (const k of FILTER_KEYS) {
+    const v = f[k];
+    if (!v) continue;
+    if ((k === "minPrice" || k === "maxPrice" || k === "minYear" || k === "maxKm") && num(v) === undefined) continue;
+    if (k === "type" && v !== "MOTORCYCLE" && v !== "SCOOTER") continue;
+    p.set(k, v);
+  }
+  return p.toString();
+}
+
+export const filtersFromQuery = (query: string) => parseFilters(Object.fromEntries(new URLSearchParams(query)));
+
+/** Short human label such as "Scooter, Pokhara, under Rs. 300000". */
+export function describeFilters(f: Filters): string {
+  const parts = [
+    f.q && `"${f.q}"`,
+    f.type === "MOTORCYCLE" ? "Motorcycle" : f.type === "SCOOTER" ? "Scooter" : "",
+    f.brand,
+    f.city,
+    num(f.minPrice) !== undefined && `from Rs. ${f.minPrice}`,
+    num(f.maxPrice) !== undefined && `under Rs. ${f.maxPrice}`,
+    num(f.minYear) && `${f.minYear} or newer`,
+    num(f.maxKm) !== undefined && `up to ${f.maxKm} km`,
+  ].filter(Boolean);
+  return parts.length ? parts.join(", ") : "All bikes";
+}
+
+export const FEATURED_MAX = 4;
+
+/** Only the columns a listing card shows. Skips the long description and phone number. */
+export const cardSelect = {
+  id: true, title: true, priceNpr: true, year: true, kmDriven: true, city: true, brand: true, model: true,
+  negotiable: true, status: true, featuredUntil: true, sellerId: true,
+  images: { select: { url: true }, orderBy: { position: "asc" }, take: 1 },
+} satisfies Prisma.ListingSelect;
+
+export async function searchListings(f: Filters) {
+  const where = buildWhere(f);
   const orderBy: Prisma.ListingOrderByWithRelationInput =
     f.sort === "price_asc" ? { priceNpr: "asc" }
     : f.sort === "price_desc" ? { priceNpr: "desc" }
@@ -49,14 +95,38 @@ export async function searchListings(f: Filters) {
     : f.sort === "year_desc" ? { year: "desc" }
     : { createdAt: "desc" };
 
-  const [items, total] = await Promise.all([
-    db.listing.findMany({
-      where, orderBy, skip: (f.page - 1) * PAGE_SIZE, take: PAGE_SIZE,
-      include: { images: { orderBy: { position: "asc" }, take: 1 } },
-    }),
-    db.listing.count({ where }),
+  // Boosted ads are pinned above the results on every page of the same search, so they are
+  // fetched separately and left out of the paginated list (an expired boost just sorts normally).
+  const featured = await db.listing.findMany({
+    where: { ...where, featuredUntil: { gt: new Date() } },
+    orderBy: { featuredUntil: "desc" },
+    take: FEATURED_MAX,
+    select: cardSelect,
+  });
+  const rest: Prisma.ListingWhereInput = featured.length ? { ...where, id: { notIn: featured.map((l) => l.id) } } : where;
+
+  const [items, restTotal] = await Promise.all([
+    db.listing.findMany({ where: rest, orderBy, skip: (f.page - 1) * PAGE_SIZE, take: PAGE_SIZE, select: cardSelect }),
+    db.listing.count({ where: rest }),
   ]);
-  return { items, total, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+  const ratings = await sellerRatings([...featured, ...items].map((l) => l.sellerId));
+  const withRating = <T extends { sellerId: string }>(l: T) => ({ ...l, rating: ratings.get(l.sellerId) ?? null });
+  return {
+    items: items.map(withRating),
+    featured: featured.map(withRating),
+    total: restTotal + featured.length,
+    pages: Math.max(1, Math.ceil(restTotal / PAGE_SIZE)),
+  };
+}
+
+export type Rating = { avg: number; count: number };
+
+/** Average rating and review count for each seller that has at least one review. */
+export async function sellerRatings(sellerIds: string[]): Promise<Map<string, Rating>> {
+  const ids = [...new Set(sellerIds)];
+  if (!ids.length) return new Map();
+  const rows = await db.review.groupBy({ by: ["sellerId"], where: { sellerId: { in: ids } }, _avg: { rating: true }, _count: { _all: true } });
+  return new Map(rows.map((r) => [r.sellerId, { avg: r._avg.rating ?? 0, count: r._count._all }]));
 }
 
 /** Number of conversations with messages from the other side that the user hasn't opened yet. */

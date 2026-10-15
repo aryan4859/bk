@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  // fewer srcset candidates: smaller HTML and fewer variants for the optimizer to generate and cache
+  images: { deviceSizes: [480, 750, 1080, 1440], imageSizes: [128, 256, 384] },
   allowedDevOrigins: ["192.168.10.251"],
   async headers() {
     return [

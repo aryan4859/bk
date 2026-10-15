@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 !.env.example
 /uploads
+/scripts/photos
+
+# test and performance output (regenerate with `npm run test:report` / `npm run perf`)
+/test-results/
+/playwright-report/
+/blob-report/
+/perf-results/
+/TEST_REPORT.md

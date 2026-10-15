@@ -25,3 +25,6 @@ export function normalizePhone(raw: string) {
 }
 
 export const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
+
+/** True while a boost is still running. */
+export const isFeaturedNow = (until?: Date | null) => !!until && until.getTime() > Date.now();

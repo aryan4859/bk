@@ -5,3 +5,22 @@ node_modules
 !.env.example
 uploads
 tsconfig.tsbuildinfo
+
+# development only: not needed to build or run the production image
+tests
+playwright.config.ts
+vitest.config.ts
+test-results
+playwright-report
+blob-report
+coverage
+perf-results
+TEST_REPORT.md
+scripts/photos
+scripts/fetch-photos.mjs
+scripts/perf.mjs
+scripts/test-db.mjs
+scripts/test-report.mjs
+scripts/seed.mjs
+README.md
+AGENTS.md

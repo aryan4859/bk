@@ -1,16 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin, requireUser } from "./auth";
 import { flash } from "./flash";
-import { BRANDS, CITIES, MAX_IMAGES } from "./constants";
+import { BRANDS, CITIES, FEATURE_DAYS, MAX_IMAGES } from "./constants";
 import { db } from "./db";
 import { saveImage } from "./images";
 import { normalizePhone } from "./format";
 import { HOUR, MINUTE, rateLimit } from "./ratelimit";
+import { notifyListingLive } from "./alerts";
+import { describeFilters, filtersFromQuery, filtersToQuery } from "./queries";
+import { reviewEligibility, reviewSchema } from "./reviews";
 
 export type FormState =
   | { error?: string; fieldErrors?: Record<string, string>; values?: Record<string, string> }
@@ -180,7 +184,11 @@ export async function toggleFavorite(formData: FormData) {
   const key = { userId_listingId: { userId: user.id, listingId } };
   const has = await db.favorite.findUnique({ where: key });
   if (has) await db.favorite.delete({ where: key });
-  else await db.favorite.create({ data: { userId: user.id, listingId } });
+  else {
+    const listing = await db.listing.findUnique({ where: { id: listingId }, select: { priceNpr: true } });
+    if (!listing) return flash("That ad no longer exists.", "error");
+    await db.favorite.create({ data: { userId: user.id, listingId, priceAtSave: listing.priceNpr } });
+  }
   await flash(has ? "Removed from saved bikes." : "Saved. Find it under Saved.");
   revalidatePath(`/listings/${listingId}`);
   revalidatePath("/saved");
@@ -238,7 +246,10 @@ export async function reportListing(_: FormState, formData: FormData): Promise<F
 
 export async function approveListing(formData: FormData) {
   await requireAdmin();
-  await db.listing.update({ where: { id: String(formData.get("id")) }, data: { status: "ACTIVE", rejectReason: null } });
+  const id = String(formData.get("id"));
+  await db.listing.update({ where: { id }, data: { status: "ACTIVE", rejectReason: null } });
+  // price-drop and saved-search emails go out after the response so approving stays instant
+  after(() => notifyListingLive(id).catch((e) => console.error("alerts failed", e)));
   await flash("Ad approved and now live.");
   revalidatePath("/admin", "layout");
 }
@@ -286,4 +297,86 @@ export async function setRole(formData: FormData) {
   await db.user.update({ where: { id }, data: { role } });
   await flash(role === "ADMIN" ? "Made admin." : "Admin removed.");
   revalidatePath("/admin", "layout");
+}
+
+// ---------- reviews ----------
+
+export async function submitReview(sellerId: string, _: FormState, formData: FormData): Promise<FormState> {
+  const user = await requireUser(`/sellers/${sellerId}`);
+  const parsed = reviewSchema.safeParse({ rating: formData.get("rating"), comment: String(formData.get("comment") ?? "") });
+  if (!parsed.success) return fieldErrors(parsed.error, formData);
+  const seller = await db.user.findUnique({ where: { id: sellerId }, select: { id: true, banned: true } });
+  if (!seller || seller.banned) return { error: "Seller not found." };
+  const eligible = await reviewEligibility(user.id, sellerId);
+  if (eligible === "self") return { error: "You cannot review yourself." };
+  if (eligible === "no_contact") return { error: "You can review a seller after you have messaged them." };
+  if (!(await rateLimit(`review:${user.id}`, 10, HOUR))) return { error: "Too many reviews. Try again later." };
+  const key = { reviewerId_sellerId: { reviewerId: user.id, sellerId } };
+  await db.review.upsert({ where: key, update: parsed.data, create: { ...parsed.data, reviewerId: user.id, sellerId } });
+  revalidatePath(`/sellers/${sellerId}`);
+  revalidatePath("/listings");
+  return { fieldErrors: { done: "1" } };
+}
+
+export async function deleteReview(formData: FormData) {
+  const user = await requireUser("/");
+  const r = await db.review.findUnique({ where: { id: String(formData.get("id")) } });
+  if (!r || (r.reviewerId !== user.id && user.role !== "ADMIN")) return flash("We could not delete that review.", "error");
+  await db.review.delete({ where: { id: r.id } });
+  await flash("Review deleted.");
+  revalidatePath(`/sellers/${r.sellerId}`);
+}
+
+// ---------- saved searches ----------
+
+const MAX_SAVED_SEARCHES = 10;
+
+export async function saveSearch(formData: FormData) {
+  const user = await requireUser("/listings");
+  const f = filtersFromQuery(String(formData.get("query") ?? ""));
+  const query = filtersToQuery(f);
+  const back = `/listings${query ? `?${query}` : ""}`;
+  if (!query) {
+    await flash("Pick at least one filter before saving a search.", "error");
+    redirect(back);
+  }
+  if ((await db.savedSearch.count({ where: { userId: user.id } })) >= MAX_SAVED_SEARCHES) {
+    await flash(`You can keep up to ${MAX_SAVED_SEARCHES} saved searches.`, "error");
+    redirect(back);
+  }
+  await db.savedSearch.upsert({
+    where: { userId_query: { userId: user.id, query } },
+    update: {},
+    create: { userId: user.id, query, label: describeFilters(f).slice(0, 120) },
+  });
+  await flash("Search saved. We will email you when a new bike matches.");
+  revalidatePath("/saved");
+  redirect(back);
+}
+
+export async function deleteSavedSearch(formData: FormData) {
+  const user = await requireUser("/saved");
+  await db.savedSearch.deleteMany({ where: { id: String(formData.get("id")), userId: user.id } });
+  await flash("Saved search removed.");
+  revalidatePath("/saved");
+}
+
+// ---------- featured ads ----------
+
+export async function featureListing(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const days = Number(formData.get("days"));
+  const l = await db.listing.findUnique({ where: { id }, select: { status: true } });
+  if (!l) return flash("Ad not found.", "error");
+  if (days === 0) {
+    await db.listing.update({ where: { id }, data: { featuredUntil: null } });
+    await flash("Ad is no longer featured.");
+  } else if ((FEATURE_DAYS as readonly number[]).includes(days) && l.status === "ACTIVE") {
+    await db.listing.update({ where: { id }, data: { featuredUntil: new Date(Date.now() + days * 86_400_000) } });
+    await flash(`Ad featured for ${days} days.`);
+  } else {
+    return flash("Only live ads can be featured.", "error");
+  }
+  revalidatePath("/", "layout");
 }

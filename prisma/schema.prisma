@@ -37,6 +37,9 @@ model User {
   threads   Thread[]  @relation("buyer")
   reports   Report[]
   favorites Favorite[]
+  reviewsGiven    Review[]      @relation("reviewer")
+  reviewsReceived Review[]      @relation("seller")
+  savedSearches   SavedSearch[]
 }
 
 model Otp {
@@ -69,6 +72,8 @@ model Listing {
   bluebookOk   Boolean       @default(false)
   status       ListingStatus @default(PENDING)
   rejectReason String?
+  /// set by admins; the ad is pinned to the top of results until this moment
+  featuredUntil DateTime?
   images       Image[]
   threads      Thread[]
   reports      Report[]
@@ -78,8 +83,16 @@ model Listing {
 
   @@index([status, createdAt])
   @@index([status, priceNpr])
+  @@index([status, featuredUntil])
+  @@index([status, type, createdAt])
+  @@index([sellerId])
   @@index([brand, model])
   @@index([city])
+  // trigram indexes make the "contains" text search index-backed instead of a full table scan
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "Listing_title_trgm_idx")
+  @@index([model(ops: raw("gin_trgm_ops"))], type: Gin, map: "Listing_model_trgm_idx")
+  @@index([brand(ops: raw("gin_trgm_ops"))], type: Gin, map: "Listing_brand_trgm_idx")
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, map: "Listing_description_trgm_idx")
 }
 
 model Image {
@@ -88,6 +101,8 @@ model Image {
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
   url       String
   position  Int     @default(0)
+
+  @@index([listingId, position])
 }
 
 model Thread {
@@ -126,6 +141,9 @@ model Report {
   reason     String
   resolved   Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  @@index([listingId])
+  @@index([resolved, createdAt])
 }
 
 model Favorite {
@@ -133,8 +151,49 @@ model Favorite {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  /// price when the bike was saved or when the buyer was last told about a drop; drives price-drop emails
+  priceAtSave Int   @default(0)
 
   @@id([userId, listingId])
+  @@index([listingId])
+}
+
+/// A buyer's rating of a seller. One per buyer/seller pair, and only after they have chatted.
+model Review {
+  id         String   @id @default(cuid())
+  sellerId   String
+  seller     User     @relation("seller", fields: [sellerId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User     @relation("reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([reviewerId, sellerId])
+  @@index([sellerId, createdAt])
+}
+
+/// Filters a buyer wants to be emailed about when a matching ad goes live.
+model SavedSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String
+  /// canonical query string of the filters, e.g. "type=SCOOTER&city=Pokhara&maxPrice=300000"
+  query     String
+  createdAt DateTime @default(now())
+  matches   SearchMatch[]
+
+  @@unique([userId, query])
+}
+
+/// Listings a saved search has already emailed about, so an ad is never announced twice.
+model SearchMatch {
+  savedSearchId String
+  savedSearch   SavedSearch @relation(fields: [savedSearchId], references: [id], onDelete: Cascade)
+  listingId     String
+
+  @@id([savedSearchId, listingId])
 }
 
 /// Fixed-window counters backing lib/ratelimit.ts

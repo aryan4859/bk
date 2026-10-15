@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import { CompareToggle } from "@/components/Compare";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { Gallery } from "@/components/Gallery";
 import { ReportButton } from "@/components/ReportButton";
+import { Stars } from "@/components/Stars";
 import { deleteListing, setSold, startThread, toggleFavorite } from "@/lib/actions";
 import { getUser } from "@/lib/auth";
 import { TYPE_LABEL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatKm, formatNpr, timeAgo } from "@/lib/format";
 
+// shared by generateMetadata and the page so the ad is fetched once per request
+const getListing = cache((id: string) =>
+  db.listing.findUnique({
+    where: { id },
+    include: { images: { orderBy: { position: "asc" } }, seller: { select: { id: true, name: true, email: true, createdAt: true } } },
+  }),
+);
+
 export async function generateMetadata({ params }: PageProps<"/listings/[id]">): Promise<Metadata> {
-  const l = await db.listing.findUnique({ where: { id: (await params).id } });
+  const l = await getListing((await params).id);
   if (!l || l.status !== "ACTIVE") return { title: "Bike", robots: { index: false } };
   return {
     title: `${l.year} ${l.brand} ${l.model}`,
@@ -24,10 +35,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
   const sp = await searchParams;
   const [user, l] = await Promise.all([
     getUser(),
-    db.listing.findUnique({
-      where: { id },
-      include: { images: { orderBy: { position: "asc" } }, seller: { select: { name: true, email: true, createdAt: true } } },
-    }),
+    getListing(id),
   ]);
   if (!l) notFound();
 
@@ -36,7 +44,11 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
   const isPublic = l.status === "ACTIVE" || l.status === "SOLD";
   if (!isPublic && !isOwner && !isAdmin) notFound();
 
-  const saved = user ? !!(await db.favorite.findUnique({ where: { userId_listingId: { userId: user.id, listingId: id } } })) : false;
+  const [rating, savedRow] = await Promise.all([
+    db.review.aggregate({ where: { sellerId: l.sellerId }, _avg: { rating: true }, _count: { _all: true } }),
+    user ? db.favorite.findUnique({ where: { userId_listingId: { userId: user.id, listingId: id } } }) : null,
+  ]);
+  const saved = !!savedRow;
   const sellerName = l.seller.name ?? l.seller.email.split("@")[0];
   const specs: [string, string][] = [
     ["Type", TYPE_LABEL[l.type]], ["Brand", l.brand], ["Model", l.model], ["Year", String(l.year)],
@@ -103,6 +115,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
                 ) : (
                   <Link href={`/login?next=/listings/${l.id}`} className="btn-outline w-full">Log in to see phone number</Link>
                 )}
+                <CompareToggle id={l.id} label={`${l.brand} ${l.model}`} className="w-full py-2 text-sm" wide />
                 <form action={toggleFavorite}>
                   <input type="hidden" name="id" value={l.id} />
                   <button className="w-full pt-1 text-sm text-muted hover:text-ink">{saved ? "Remove from saved" : "Save this bike"}</button>
@@ -112,8 +125,12 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
           </div>
 
           <div className="rounded-lg border border-line bg-surface p-5 text-sm ">
-            <div className="font-medium">{sellerName}</div>
+            <Link href={`/sellers/${l.seller.id}`} className="font-medium hover:underline">{sellerName}</Link>
             <div className="text-muted">Member since {l.seller.createdAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
+            <div className="mt-1">
+              {rating._avg.rating ? <Stars avg={rating._avg.rating} count={rating._count._all} /> : <span className="text-muted">No reviews yet</span>}
+              {" "}<Link href={`/sellers/${l.seller.id}`} className="text-brand underline underline-offset-4">{isOwner ? "See reviews" : "Reviews"}</Link>
+            </div>
           </div>
 
           <div className="rounded-lg bg-surface-sunk p-4 text-sm text-muted">

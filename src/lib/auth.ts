@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { db } from "./db";
 import { getSessionUserId } from "./session";
 
-export async function getUser() {
+/** The logged-in user, looked up once per request even though the layout, page and metadata all ask. */
+export const getUser = cache(async () => {
   const id = await getSessionUserId();
   const user = id ? await db.user.findUnique({ where: { id } }) : null;
   return user && !user.banned ? user : null;
-}
+});
 
 export async function requireUser(next = "/") {
   const user = await getUser();

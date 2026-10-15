@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Photo } from "@/components/Photo";
 import { ReviewActions } from "@/components/ReviewActions";
 import { db } from "@/lib/db";
-import { formatNpr, timeAgo } from "@/lib/format";
+import { formatNpr, isFeaturedNow, timeAgo } from "@/lib/format";
 
 const STATUSES = ["ALL", "PENDING", "ACTIVE", "SOLD", "REJECTED"] as const;
 const PAGE = 20;
@@ -48,9 +48,9 @@ export default async function AdminListings({ searchParams }: PageProps<"/admin/
             {s === "ALL" ? "All" : s[0] + s.slice(1).toLowerCase()} <span className="opacity-60">{count(s)}</span>
           </Link>
         ))}
-        <form className="ml-auto flex gap-2">
+        <form className="flex w-full gap-2 sm:ml-auto sm:w-auto">
           {status !== "ALL" && <input type="hidden" name="status" value={status} />}
-          <input name="q" defaultValue={q} placeholder="Title, model or seller email" className="input w-64 py-1.5" />
+          <input name="q" defaultValue={q} placeholder="Title, model or seller email" className="input min-w-0 flex-1 py-1.5 sm:w-64 sm:flex-none" />
           <button className="btn-outline py-1.5">Search</button>
         </form>
       </div>
@@ -60,16 +60,17 @@ export default async function AdminListings({ searchParams }: PageProps<"/admin/
       ) : (
         <ul className="mt-5 divide-y divide-line rounded-lg border border-line bg-surface">
           {items.map((l) => (
-            <li key={l.id} className="flex gap-4 p-4">
-              <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded bg-surface-sunk"><Photo src={l.images[0]?.url} alt="" /></div>
+            <li key={l.id} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+              <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded bg-surface-sunk sm:h-16 sm:w-24"><Photo src={l.images[0]?.url} alt="" /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Link href={`/listings/${l.id}`} className="truncate font-medium hover:underline">{l.title}</Link>
                   <span className="shrink-0 rounded bg-surface-sunk px-2 py-0.5 text-xs">{l.status.toLowerCase()}</span>
+                  {isFeaturedNow(l.featuredUntil) && l.featuredUntil && <span className="shrink-0 rounded bg-accent px-2 py-0.5 text-xs">featured until {l.featuredUntil.toLocaleDateString("en-GB")}</span>}
                 </div>
                 <div className="text-sm text-muted">{l.brand} {l.model} · {l.year} · {formatNpr(l.priceNpr)} · {l.city}</div>
                 <div className="text-sm text-muted">{l.seller.email} · {timeAgo(l.createdAt)}{l.rejectReason && ` · ${l.rejectReason}`}</div>
-                <div className="mt-2"><ReviewActions id={l.id} status={l.status} /></div>
+                <div className="mt-2"><ReviewActions id={l.id} status={l.status} featuredUntil={l.featuredUntil} /></div>
               </div>
             </li>
           ))}

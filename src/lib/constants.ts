@@ -21,3 +21,6 @@ export const SORTS = {
 
 export const MAX_IMAGES = 4;
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/** Durations (days) an admin can feature an ad for. */
+export const FEATURE_DAYS = [7, 14, 30] as const;

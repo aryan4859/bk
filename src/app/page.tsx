@@ -1,8 +1,10 @@
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { BRANDS, CITIES } from "@/lib/constants";
 import { db } from "@/lib/db";
+import { FEATURED_MAX, cardSelect, sellerRatings } from "@/lib/queries";
 
 const STEPS = [
   ["Post your bike", "Add photos, the price and an honest description of the condition."],
@@ -10,17 +12,28 @@ const STEPS = [
   ["Meet the buyer", "Buyers message or call you. You agree on a price and handle the paperwork yourselves."],
 ] as const;
 
+// Totals only need to be roughly right, so they are cached for a minute instead of hitting the
+// database on every visit to the busiest page.
+const getHomeStats = unstable_cache(
+  async () => {
+    const [count, cities] = await Promise.all([
+      db.listing.count({ where: { status: "ACTIVE" } }),
+      db.listing.groupBy({ by: ["city"], where: { status: "ACTIVE" }, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 8 }),
+    ]);
+    return { count, cities };
+  },
+  ["home-stats"],
+  { revalidate: 60 },
+);
+
 export default async function Home() {
-  const [latest, count, cities] = await Promise.all([
-    db.listing.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: { images: { orderBy: { position: "asc" }, take: 1 } },
-    }),
-    db.listing.count({ where: { status: "ACTIVE" } }),
-    db.listing.groupBy({ by: ["city"], where: { status: "ACTIVE" }, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 8 }),
+  const [featured, latest, { count, cities }] = await Promise.all([
+    db.listing.findMany({ where: { status: "ACTIVE", featuredUntil: { gt: new Date() } }, orderBy: { featuredUntil: "desc" }, take: FEATURED_MAX, select: cardSelect }),
+    db.listing.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" }, take: 8, select: cardSelect }),
+    getHomeStats(),
   ]);
+  const ratings = await sellerRatings([...featured, ...latest].map((l) => l.sellerId));
+  const withRating = <T extends { sellerId: string }>(l: T) => ({ ...l, rating: ratings.get(l.sellerId) ?? null });
 
   return (
     <>
@@ -49,6 +62,15 @@ export default async function Home() {
         </div>
       </section>
 
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6 pt-16" aria-labelledby="featured">
+          <h2 id="featured" className="text-3xl sm:text-4xl">Featured</h2>
+          <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
+            {featured.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={i < 4} />)}
+          </div>
+        </section>
+      )}
+
       <section className="mx-auto max-w-6xl px-6 pt-16">
         <div className="flex items-end justify-between gap-4">
           <h2 className="text-3xl sm:text-4xl">Just listed</h2>
@@ -60,7 +82,7 @@ export default async function Home() {
           </p>
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
-            {latest.map((l) => <ListingCard key={l.id} listing={l} />)}
+            {latest.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={featured.length === 0 && i < 4} />)}
           </div>
         )}
       </section>

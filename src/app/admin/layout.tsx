@@ -12,8 +12,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     db.report.count({ where: { resolved: false } }),
   ]);
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-[200px_1fr]">
-      <aside className="md:sticky md:top-6 md:self-start">
+    <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-6 px-4 py-6 sm:py-8 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8">
+      <aside className="-mx-4 min-w-0 px-4 md:sticky md:top-6 md:mx-0 md:self-start md:px-0">
         <div className="mb-3 hidden text-xs font-medium uppercase tracking-wide text-muted md:block">Admin</div>
         <AdminNav pending={pending} reports={reports} />
       </aside>

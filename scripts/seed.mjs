@@ -2,7 +2,7 @@
 // Re-running replaces the previous demo data (everything tied to @demo.test accounts).
 import { PrismaClient } from "@prisma/client";
 import { randomBytes } from "crypto";
-import { mkdirSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "fs";
 import { deflateSync } from "zlib";
 
 const db = new PrismaClient();
@@ -48,6 +48,18 @@ function photo(rgb) {
   writeFileSync("uploads/" + name, png(rgb));
   return "/uploads/" + name;
 }
+// real photos from `npm run photos` (scripts/photos/<type>-<brand>-N.jpg); falls back to the gradient placeholders
+const PHOTO_DIR = "scripts/photos";
+const realPhotos = (type, brand) => {
+  if (!existsSync(PHOTO_DIR)) return [];
+  const slug = `${type}|${brand}`.toLowerCase().replace(/[^a-z]+/g, "-");
+  return readdirSync(PHOTO_DIR).filter((f) => f.startsWith(slug + "-") && f.endsWith(".jpg"));
+};
+function realPhoto(file) {
+  const name = randomBytes(12).toString("hex") + ".jpg";
+  copyFileSync(`${PHOTO_DIR}/${file}`, "uploads/" + name);
+  return "/uploads/" + name;
+}
 const COLORS = [[170, 60, 50], [60, 90, 150], [60, 120, 90], [120, 120, 125], [200, 130, 50], [140, 60, 110], [40, 40, 45], [190, 170, 90]];
 
 // ---- catalogue ----
@@ -83,6 +95,8 @@ const NOTES = [
 // ---- wipe previous demo data ----
 const old = await db.user.findMany({ where: { email: { endsWith: "@demo.test" } }, select: { id: true } });
 const oldIds = old.map((u) => u.id);
+await db.review.deleteMany({ where: { OR: [{ sellerId: { in: oldIds } }, { reviewerId: { in: oldIds } }] } });
+await db.savedSearch.deleteMany({ where: { userId: { in: oldIds } } });
 await db.message.deleteMany({ where: { OR: [{ senderId: { in: oldIds } }, { thread: { listing: { sellerId: { in: oldIds } } } }] } });
 await db.thread.deleteMany({ where: { OR: [{ buyerId: { in: oldIds } }, { listing: { sellerId: { in: oldIds } } }] } });
 await db.report.deleteMany({ where: { OR: [{ reporterId: { in: oldIds } }, { listing: { sellerId: { in: oldIds } } }] } });
@@ -109,7 +123,9 @@ for (let n = 0; n < COUNT; n++) {
   const status = n < 36 ? "ACTIVE" : n < 42 ? "PENDING" : n < 46 ? "SOLD" : "REJECTED";
   const seller = users[n % users.length];
   const base = pick(COLORS);
-  const imgCount = int(1, 4);
+  const real = realPhotos(type, brand);
+  const imgCount = real.length ? Math.min(real.length, int(1, 4)) : int(1, 4);
+  const start = real.length ? int(0, real.length - 1) : 0;
   const l = await db.listing.create({
     data: {
       sellerId: seller.id, type, brand, model, year, kmDriven, priceNpr,
@@ -123,7 +139,7 @@ for (let n = 0; n < COUNT; n++) {
       status,
       rejectReason: status === "REJECTED" ? pick(["Photos do not show the bike.", "Price looks like a typo."]) : null,
       createdAt: new Date(Date.now() - int(0, 30) * 86400_000 - int(0, 20) * 3600_000),
-      images: { create: Array.from({ length: imgCount }, (_, position) => ({ url: photo(base.map((c) => Math.max(0, Math.min(255, c + int(-25, 25))))), position })) },
+      images: { create: Array.from({ length: imgCount }, (_, position) => ({ url: real.length ? realPhoto(real[(start + position) % real.length]) : photo(base.map((c) => Math.max(0, Math.min(255, c + int(-25, 25))))), position })) },
     },
   });
   listings.push(l);
@@ -150,6 +166,14 @@ for (const l of live.slice(0, 20)) {
   const u = users.find((x) => x.id !== l.sellerId && rnd() > 0.5) ?? users[0];
   if (u.id !== l.sellerId) await db.favorite.upsert({ where: { userId_listingId: { userId: u.id, listingId: l.id } }, update: {}, create: { userId: u.id, listingId: l.id } });
 }
+// a few boosted ads and seller reviews so the new features have something to show
+for (const l of live.slice(0, 3)) await db.listing.update({ where: { id: l.id }, data: { featuredUntil: new Date(Date.now() + int(5, 25) * 86400_000) } });
+const REVIEWS = ["Honest seller, the bike was exactly as described.", "Quick replies and easy paperwork.", "Bike was fine but the price did not move at all.", "Met in Kathmandu, no problems.", ""];
+for (const seller of users.slice(0, 6)) {
+  for (const reviewer of users.filter((u) => u.id !== seller.id).slice(0, int(1, 4))) {
+    await db.review.create({ data: { sellerId: seller.id, reviewerId: reviewer.id, rating: int(3, 5), comment: pick(REVIEWS) || null } });
+  }
+}
 const reasons = ["Photos look copied from another website.", "Price is far too low, could be a scam.", "Seller asked me to pay in advance."];
 for (let i = 0; i < 3; i++) {
   const l = live[10 + i];
@@ -157,5 +181,5 @@ for (let i = 0; i < 3; i++) {
   await db.report.create({ data: { listingId: l.id, reporterId: reporter.id, reason: reasons[i] } });
 }
 
-console.log(`Seeded ${users.length} users, ${listings.length} listings (${live.length} live), 10 conversations, 3 reports`);
+console.log(`Seeded ${users.length} users, ${listings.length} listings (${live.length} live), 10 conversations, 3 reports, 3 featured ads, reviews`);
 await db.$disconnect();
