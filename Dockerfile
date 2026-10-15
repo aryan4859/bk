@@ -7,6 +7,8 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci --include=dev
 COPY . .
+# public/ is empty in the repo, and git does not keep empty folders, so make sure it exists for the copy below
+RUN mkdir -p public
 # keep the build well under the host's memory limit (see next.config.ts)
 ENV NODE_OPTIONS=--max-old-space-size=3072
 RUN npx prisma generate && npm run build
