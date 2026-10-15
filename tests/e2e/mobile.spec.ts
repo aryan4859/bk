@@ -80,6 +80,13 @@ test.describe("phone layout", () => {
     expect(badge.x + badge.width).toBeLessThanOrEqual(btn.x);
   });
 
+  test("the hero scene shows two bikes and does not react to touch tilt", async ({ page }) => {
+    await page.goto("/");
+    const cards = page.getByRole("group", { name: "Recently listed bikes" }).getByRole("link");
+    await expect(cards.filter({ visible: true })).toHaveCount(2);
+    await expectNoSideScroll(page);
+  });
+
   test("filters open from a button and apply", async ({ page }) => {
     await page.goto("/listings");
     await page.getByText("Filters and sorting").click();

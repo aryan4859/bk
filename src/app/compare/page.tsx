@@ -24,32 +24,32 @@ export default async function Compare({ searchParams }: PageProps<"/compare">) {
       <PageHero title="Compare bikes" subtitle="Side by side. The best value in each row is highlighted." />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         {items.length < 2 ? (
-          <p className="rounded-lg border border-dashed border-line p-10 text-center text-muted">
+          <p className="rounded-xl bg-surface p-10 text-center text-muted">
             Pick at least two bikes to compare. Tap “+ Compare” on any listing, then come back here.{" "}
-            <Link href="/listings" className="text-brand underline underline-offset-4">Browse bikes</Link>
+            <Link href="/listings" className="link">Browse bikes</Link>
           </p>
         ) : (
           <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <table className={`w-full table-fixed border-collapse text-left text-sm sm:text-base ${items.length > 2 ? "min-w-[560px]" : ""}`}>
               <thead>
                 <tr>
-                  <th scope="col" className="sticky left-0 z-10 w-20 bg-white sm:w-32" />
+                  <th scope="col" className="sticky left-0 z-10 w-20 bg-canvas sm:w-32" />
                   {items.map((l) => (
                     <th key={l.id} scope="col" className="p-2 align-top font-normal sm:p-3">
                       <Link href={`/listings/${l.id}`} className="group block">
-                        <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-wash"><Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}`} sizes="(min-width: 1024px) 300px, 50vw" /></div>
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-card"><Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}`} sizes="(min-width: 1024px) 300px, 50vw" /></div>
                         <div className="mt-2 font-semibold leading-snug group-hover:underline">{l.brand} {l.model}</div>
                       </Link>
                       {ratings.get(l.sellerId) && <Stars avg={ratings.get(l.sellerId)!.avg} count={ratings.get(l.sellerId)!.count} className="text-sm" />}
-                      {l.status === "SOLD" && <div className="text-sm text-brand">Sold</div>}
+                      {l.status === "SOLD" && <div className="text-sm text-error">Sold</div>}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
-                  <tr key={r.label} className="border-t border-line">
-                    <th scope="row" className="sticky left-0 z-10 bg-white p-2 text-sm font-normal text-muted sm:p-3">{r.label}</th>
+                {rows.map((r, ri) => (
+                  <tr key={r.label} className={ri % 2 ? "bg-canvas" : "bg-wash"}>
+                    <th scope="row" className="sticky left-0 z-10 bg-inherit p-2 text-sm font-normal text-muted sm:p-3">{r.label}</th>
                     {r.values.map((v, i) => (
                       <td key={i} className={`p-2 align-top sm:p-3 ${r.best?.includes(i) ? "font-semibold text-ok" : ""}`}>
                         {v}{r.best?.includes(i) && <span className="sr-only"> (best)</span>}

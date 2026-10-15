@@ -24,3 +24,5 @@ scripts/test-report.mjs
 scripts/seed.mjs
 README.md
 AGENTS.md
+.taste-skill
+DESIGN.md

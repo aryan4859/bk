@@ -33,10 +33,10 @@ export default async function Dashboard() {
 
   return (
     <div className="space-y-10">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <h1 className="text-4xl">Dashboard</h1>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {stats.map(([label, n, sub]) => (
-          <div key={label} className="rounded-lg border border-line bg-surface p-4">
+          <div key={label} className="rounded-xl bg-surface p-4">
             <div className="text-sm text-muted">{label}</div>
             <div className="mt-1 text-3xl font-bold">{n}</div>
             {sub && <div className="mt-0.5 text-xs text-muted">{sub}</div>}
@@ -46,15 +46,15 @@ export default async function Dashboard() {
 
       <section>
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold">Oldest waiting for review</h2>
-          <Link href="/admin/listings?status=PENDING" className="text-sm text-brand hover:underline">View all</Link>
+          <h2 className="text-xl">Oldest waiting for review</h2>
+          <Link href="/admin/listings?status=PENDING" className="text-sm link">View all</Link>
         </div>
         {queue.length === 0 ? (
           <p className="mt-3 text-muted">All caught up.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-line rounded-lg border border-line bg-surface">
+          <ul className="mt-3 space-y-2">
             {queue.map((l) => (
-              <li key={l.id} className="flex gap-4 p-4">
+              <li key={l.id} className="flex gap-4 rounded-xl bg-surface p-4">
                 <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded bg-surface-sunk"><Photo src={l.images[0]?.url} alt="" /></div>
                 <div className="min-w-0 flex-1">
                   <Link href={`/listings/${l.id}`} className="font-medium hover:underline">{l.title}</Link>
@@ -69,12 +69,12 @@ export default async function Dashboard() {
 
       <section>
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold">New users</h2>
-          <Link href="/admin/users" className="text-sm text-brand hover:underline">View all</Link>
+          <h2 className="text-xl">New users</h2>
+          <Link href="/admin/users" className="text-sm link">View all</Link>
         </div>
-        <ul className="mt-3 divide-y divide-line rounded-lg border border-line bg-surface text-[15px]">
+        <ul className="mt-3 space-y-2 text-base">
           {signups.map((u) => (
-            <li key={u.id} className="flex justify-between p-3">
+            <li key={u.id} className="flex justify-between rounded-xl bg-surface p-3">
               <span>{u.email}</span><span className="text-muted">{timeAgo(u.createdAt)}</span>
             </li>
           ))}

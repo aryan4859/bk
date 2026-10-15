@@ -24,9 +24,9 @@ export default async function Inbox() {
     <PageHero title="Messages" subtitle="Your conversations with buyers and sellers." />
     <div className="mx-auto max-w-3xl px-6 py-10">
       {threads.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line p-10 text-center text-muted">No conversations yet.</p>
+        <p className="rounded-xl bg-surface p-10 text-center text-muted">No conversations yet.</p>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface ">
+        <ul className="space-y-2">
           {threads.map((t) => {
             const last = t.messages[0];
             const readAt = t.listing.sellerId === user.id ? t.sellerReadAt : t.buyerReadAt;
@@ -34,7 +34,7 @@ export default async function Inbox() {
             const buyerName = t.buyer.name ?? t.buyer.email.split("@")[0];
             return (
               <li key={t.id}>
-                <Link href={`/inbox/${t.id}`} className="block p-4 hover:bg-surface-sunk">
+                <Link href={`/inbox/${t.id}`} className="block rounded-xl bg-surface p-4 transition-colors hover:bg-cream">
                   <div className="flex justify-between gap-4">
                     <span className="truncate font-medium">{unread && <span className="mr-2 inline-block size-2 rounded-full bg-accent align-middle" />}{t.listing.title}</span>
                     <span className="shrink-0 text-sm text-muted">{last && timeAgo(last.createdAt)}</span>
@@ -42,7 +42,7 @@ export default async function Inbox() {
                   <div className="text-sm text-muted">
                     {formatNpr(t.listing.priceNpr)}, {t.listing.sellerId === user.id ? `Buyer: ${buyerName}` : "You are the buyer"}
                   </div>
-                  <div className={`mt-1 truncate text-[15px] ${unread ? "font-semibold" : ""}`}>{last ? `${last.senderId === user.id ? "You: " : ""}${last.body}` : "No messages yet"}</div>
+                  <div className={`mt-1 truncate text-base ${unread ? "font-semibold" : ""}`}>{last ? `${last.senderId === user.id ? "You: " : ""}${last.body}` : "No messages yet"}</div>
                 </Link>
               </li>
             );

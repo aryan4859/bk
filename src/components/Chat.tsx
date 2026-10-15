@@ -21,14 +21,14 @@ export function Chat({ threadId, messages }: { threadId: string; messages: Msg[]
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
 
   return (
-    <div className="flex flex-col rounded-lg border border-line bg-surface">
+    <div className="flex flex-col overflow-hidden rounded-xl bg-surface">
       <div className="h-[55vh] space-y-2 overflow-y-auto p-4" role="log" aria-label="Conversation" tabIndex={0}>
         {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">Say hello and ask about the bike.</p>}
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] whitespace-pre-wrap break-words rounded-lg px-3 py-2 text-[15px] ${m.mine ? "bg-accent text-ink" : "bg-surface-sunk"}`}>
+            <div className={`max-w-[80%] whitespace-pre-wrap break-words rounded-lg px-3 py-2 text-base ${m.mine ? "bg-dark text-on-dark" : "bg-canvas text-ink"}`}>
               {m.body}
-              <div className={`mt-0.5 text-xs ${m.mine ? "text-white" : "text-muted"}`}>{m.time}</div>
+              <div className={`mt-0.5 text-xs ${m.mine ? "text-on-dark-soft" : "text-muted"}`}>{m.time}</div>
             </div>
           </div>
         ))}
@@ -37,12 +37,12 @@ export function Chat({ threadId, messages }: { threadId: string; messages: Msg[]
       <form
         ref={form}
         action={async (fd) => { await action(fd); form.current?.reset(); }}
-        className="flex gap-2 border-t border-line p-3"
+        className="flex gap-2 bg-cream p-3"
       >
-        <input name="body" required maxLength={1000} autoComplete="off" aria-label="Your message" placeholder="Write a message…" className="input" />
+        <input name="body" required maxLength={1000} autoComplete="off" aria-label="Your message" placeholder="Write a message…" className="input !bg-canvas" />
         <button type="submit" disabled={pending} className="btn-primary">{pending ? "Sending…" : "Send message"}</button>
       </form>
-      {state?.error && <p role="alert" className="px-3 pb-3 text-sm text-brand">{state.error}</p>}
+      {state?.error && <p role="alert" className="bg-cream px-3 pb-3 text-sm text-error">{state.error}</p>}
     </div>
   );
 }

@@ -39,7 +39,7 @@ test.describe.serial("seller reviews", () => {
     await expect(page.getByRole("log")).toContainText("Hi, can I test ride tomorrow?");
 
     await page.goto(`/sellers/${seller.id}`);
-    await page.getByLabel("4 ★").check();
+    await page.locator("label", { has: page.getByLabel("4 stars", { exact: true }) }).click();
     await page.getByLabel("Comment (optional)").fill("Honest seller. <b>Bike</b> was as described.");
     await page.getByRole("button", { name: "Post review" }).click();
     await expect(page.getByText("Thanks, your review is saved.")).toBeVisible();
@@ -53,7 +53,7 @@ test.describe.serial("seller reviews", () => {
 
     // reviewing again updates instead of duplicating
     await expect(page.getByRole("heading", { name: "Your review" })).toBeVisible();
-    await page.getByLabel("5 ★").check();
+    await page.locator("label", { has: page.getByLabel("5 stars", { exact: true }) }).click();
     await page.getByRole("button", { name: "Update review" }).click();
     await expect(page.getByText("Thanks, your review is saved.")).toBeVisible();
     await page.reload();
@@ -93,7 +93,7 @@ test.describe.serial("seller reviews", () => {
     await loginAs(b, buyer.id);
     const bp = await b.newPage();
     await bp.goto(`/sellers/${seller.id}`);
-    await bp.getByLabel("1 ★").check();
+    await bp.locator("label", { has: bp.getByLabel("1 star", { exact: true }) }).click();
     await bp.getByRole("button", { name: "Post review" }).click();
     await expect(bp.getByText("Thanks, your review is saved.")).toBeVisible();
     await b.close();

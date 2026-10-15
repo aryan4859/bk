@@ -1,13 +1,14 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
-const chip = cva("inline-flex items-center rounded-sm text-sm", {
+const chip = cva("inline-flex items-center", {
   variants: {
     tone: {
-      soft: "bg-wash px-2 py-0.5 text-ink",
-      dark: "bg-ink px-2 py-0.5 font-medium text-white",
-      // the price plate: the one memorable element of the design
-      price: "bg-accent px-2.5 py-1 font-display text-xl text-ink",
+      soft: "rounded-full bg-card px-2.5 py-0.5 text-xs font-medium text-ink",
+      dark: "rounded-full bg-dark px-2.5 py-0.5 text-xs font-medium text-on-dark",
+      featured: "rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent",
+      // the price plate: a dark plate with cream serif figures
+      price: "rounded-md bg-dark px-2.5 py-0.5 font-display text-lg tabular-nums lining-nums text-on-dark",
     },
   },
   defaultVariants: { tone: "soft" },

@@ -32,8 +32,8 @@ export default async function Thread({ params }: PageProps<"/inbox/[id]">) {
     <div className="mx-auto max-w-2xl px-6 py-8">
       <Link href="/inbox" className="text-sm text-muted hover:text-ink">← All messages</Link>
       <div className="mb-4 mt-2">
-        <h1 className="text-xl font-semibold">{other.name ?? other.email.split("@")[0]}</h1>
-        <Link href={`/listings/${t.listingId}`} className="text-sm text-brand hover:underline">
+        <h1 className="text-xl">{other.name ?? other.email.split("@")[0]}</h1>
+        <Link href={`/listings/${t.listingId}`} className="text-sm link">
           {t.listing.title}, {formatNpr(t.listing.priceNpr)}
         </Link>
       </div>

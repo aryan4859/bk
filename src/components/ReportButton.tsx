@@ -12,7 +12,7 @@ export function ReportButton({ id }: { id: string }) {
       <form action={action} className="mt-2 space-y-2">
         <input type="hidden" name="id" value={id} />
         <textarea name="reason" rows={3} aria-label="Why are you reporting this ad?" placeholder="Fake photos, wrong price, already sold…" className="input" />
-        {state?.error && <p role="alert" className="text-brand">{state.error}</p>}
+        {state?.error && <p role="alert" className="text-error">{state.error}</p>}
         <button type="submit" disabled={pending} className="btn-outline">{pending ? "Sending…" : "Send report"}</button>
       </form>
     </details>

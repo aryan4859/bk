@@ -18,5 +18,4 @@ export async function reviewEligibility(reviewerId: string, sellerId: string): P
   return talked ? "ok" : "no_contact";
 }
 
-export const stars = (n: number) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
 export const formatRating = (avg: number) => (Math.round(avg * 10) / 10).toFixed(1);

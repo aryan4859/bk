@@ -27,14 +27,14 @@ export function MobileMenu({ links, loggedIn, logout }: Props) {
         {open ? "Close" : "Menu"}
       </button>
       {open && (
-        <nav id="mobile-nav" aria-label="Mobile" className="absolute right-0 top-full z-40 mt-2 flex w-56 flex-col rounded-lg border border-line bg-surface p-2 shadow-pop">
+        <nav id="mobile-nav" aria-label="Mobile" className="absolute right-0 top-full z-40 mt-2 flex w-60 flex-col rounded-xl bg-canvas p-2 shadow-pop">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="rounded-lg px-3 py-3 hover:bg-surface-sunk">{l.label}</Link>
+            <Link key={l.href} href={l.href} className="rounded-lg px-3 py-3 hover:bg-wash">{l.label}</Link>
           ))}
           {loggedIn ? (
-            <form action={logout}><button className="w-full rounded-lg px-3 py-3 text-left hover:bg-surface-sunk">Log out</button></form>
+            <form action={logout}><button className="w-full rounded-lg px-3 py-3 text-left hover:bg-wash">Log out</button></form>
           ) : (
-            <Link href="/login" className="rounded-lg px-3 py-3 hover:bg-surface-sunk">Log in</Link>
+            <Link href="/login" className="rounded-lg px-3 py-3 hover:bg-wash">Log in</Link>
           )}
         </nav>
       )}

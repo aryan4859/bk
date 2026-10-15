@@ -41,10 +41,10 @@ export default async function AdminListings({ searchParams }: PageProps<"/admin/
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">Listings</h1>
+      <h1 className="text-4xl">Listings</h1>
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {STATUSES.map((s) => (
-          <Link key={s} href={href({ status: s, page: 1 })} className={`rounded-full border px-3 py-1 text-sm ${s === status ? "border-ink bg-ink text-white" : "border-line bg-surface hover:border-ink"}`}>
+          <Link key={s} href={href({ status: s, page: 1 })} className={`rounded-lg px-3.5 py-1.5 text-sm font-medium ${s === status ? "bg-cream text-ink" : "text-muted hover:bg-wash hover:text-ink"}`}>
             {s === "ALL" ? "All" : s[0] + s.slice(1).toLowerCase()} <span className="opacity-60">{count(s)}</span>
           </Link>
         ))}
@@ -56,17 +56,17 @@ export default async function AdminListings({ searchParams }: PageProps<"/admin/
       </div>
 
       {items.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-line p-10 text-center text-muted">No listings found.</p>
+        <p className="mt-6 rounded-xl bg-surface p-10 text-center text-muted">No listings found.</p>
       ) : (
-        <ul className="mt-5 divide-y divide-line rounded-lg border border-line bg-surface">
+        <ul className="mt-5 space-y-2">
           {items.map((l) => (
-            <li key={l.id} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+            <li key={l.id} className="flex gap-3 rounded-xl bg-surface p-3 sm:gap-4 sm:p-4">
               <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded bg-surface-sunk sm:h-16 sm:w-24"><Photo src={l.images[0]?.url} alt="" /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Link href={`/listings/${l.id}`} className="truncate font-medium hover:underline">{l.title}</Link>
-                  <span className="shrink-0 rounded bg-surface-sunk px-2 py-0.5 text-xs">{l.status.toLowerCase()}</span>
-                  {isFeaturedNow(l.featuredUntil) && l.featuredUntil && <span className="shrink-0 rounded bg-accent px-2 py-0.5 text-xs">featured until {l.featuredUntil.toLocaleDateString("en-GB")}</span>}
+                  <span className="shrink-0 rounded-full bg-cream px-2.5 py-0.5 text-xs font-medium text-ink">{l.status.toLowerCase()}</span>
+                  {isFeaturedNow(l.featuredUntil) && l.featuredUntil && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">featured until {l.featuredUntil.toLocaleDateString("en-GB")}</span>}
                 </div>
                 <div className="text-sm text-muted">{l.brand} {l.model} · {l.year} · {formatNpr(l.priceNpr)} · {l.city}</div>
                 <div className="text-sm text-muted">{l.seller.email} · {timeAgo(l.createdAt)}{l.rejectReason && ` · ${l.rejectReason}`}</div>

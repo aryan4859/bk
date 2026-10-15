@@ -53,9 +53,9 @@ export function LoginForm({ next }: { next: string }) {
       </div>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" required checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-brand" />
-        <span>I agree to the <Link href="/terms" target="_blank" className="text-brand underline">terms and conditions</Link> and have read the <Link href="/privacy" target="_blank" className="text-brand underline">privacy policy</Link>. We only use your email to log you in.</span>
+        <span>I agree to the <Link href="/terms" target="_blank" className="link">terms and conditions</Link> and have read the <Link href="/privacy" target="_blank" className="link">privacy policy</Link>. We only use your email to log you in.</span>
       </label>
-      {error && <p role="alert" className="text-sm text-brand">{error}</p>}
+      {error && <p role="alert" className="text-sm text-error">{error}</p>}
       <button disabled={busy} className="btn-primary w-full">{busy ? "Sending…" : "Send code"}</button>
     </form>
   ) : (
@@ -66,7 +66,7 @@ export function LoginForm({ next }: { next: string }) {
         <input id="code" name="code" required autoFocus inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} className="input text-center text-xl tracking-[0.4em]" aria-describedby="code-help" />
         <p id="code-help" className="mt-1 text-sm text-muted">The code expires in 10 minutes.</p>
       </div>
-      {error && <p role="alert" className="text-sm text-brand">{error}</p>}
+      {error && <p role="alert" className="text-sm text-error">{error}</p>}
       <button disabled={busy} className="btn-primary w-full">{busy ? "Checking…" : "Log in"}</button>
       <button type="button" onClick={() => { setStep("email"); setError(""); }} className="w-full text-sm text-muted hover:text-ink">
         Use a different email

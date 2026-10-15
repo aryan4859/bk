@@ -49,11 +49,11 @@ export default async function SellerPage({ params }: PageProps<"/sellers/[id]">)
         <section aria-labelledby="reviews">
           <h2 id="reviews" className="text-2xl">Reviews</h2>
           {reviews.length === 0 ? (
-            <p className="mt-4 rounded-lg border border-dashed border-line p-8 text-center text-muted">Nobody has reviewed this seller yet.</p>
+            <p className="mt-4 rounded-xl bg-surface p-8 text-center text-muted">Nobody has reviewed this seller yet.</p>
           ) : (
-            <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-surface">
+            <ul className="mt-4 space-y-3">
               {reviews.map((r) => (
-                <li key={r.id} className="p-4">
+                <li key={r.id} className="rounded-xl bg-surface p-5">
                   <div className="flex items-center gap-3">
                     <Stars avg={r.rating} />
                     <span className="text-sm font-medium">{r.reviewer.name ?? r.reviewer.email.split("@")[0]}</span>
@@ -72,7 +72,7 @@ export default async function SellerPage({ params }: PageProps<"/sellers/[id]">)
           )}
         </section>
 
-        <aside className="rounded-lg border border-line bg-surface p-5 lg:self-start">
+        <aside className="rounded-xl bg-surface p-6 lg:self-start">
           <h2 className="text-xl">{mine ? "Your review" : "Rate this seller"}</h2>
           <div className="mt-3">
             {!user ? (

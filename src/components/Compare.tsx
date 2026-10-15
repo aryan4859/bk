@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { COMPARE_MAX } from "@/lib/compare";
+import { Icon } from "./Icon";
 
 const KEY = "compare";
 const EVT = "compare:change";
@@ -39,28 +40,35 @@ export function CompareToggle({ id, label = "this bike", className = "", wide = 
       disabled={full}
       title={full ? `You can compare up to ${COMPARE_MAX} bikes` : undefined}
       onClick={() => write(on ? ids.filter((x) => x !== id) : [...ids, id])}
-      className={`inline-flex min-h-8 min-w-8 items-center justify-center gap-1 rounded-sm border px-2 py-1 text-xs font-medium ${on ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:border-ink"} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`inline-flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium transition-[transform,background-color] duration-150 active:scale-95 ${on ? "bg-dark text-on-dark" : "bg-canvas text-ink"} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
-      <span aria-hidden className="text-sm leading-none">{on ? "✓" : "+"}</span><span className={wide ? "" : "hidden sm:inline"}>Compare</span>
+      <Icon name={on ? "check" : "plus"} className="size-4" /><span className={wide ? "" : "hidden sm:inline"}>Compare</span>
     </button>
   );
 }
 
 export function CompareBar() {
   const ids = useCompareIds();
-  if (ids.length === 0) return null;
+  const visible = ids.length > 0;
+  useEffect(() => {
+    const root = document.documentElement;
+    if (visible) root.style.setProperty("--compare-bar", "4rem");
+    else root.style.removeProperty("--compare-bar");
+    return () => { root.style.removeProperty("--compare-bar"); };
+  }, [visible]);
+  if (!visible) return null;
   return (
     <>
     {/* keeps the bottom of the page reachable behind the fixed bar */}
     <div aria-hidden className="h-20" />
-    <div role="region" aria-label="Compare bikes" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 py-3 sm:px-6 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+    <div role="region" aria-label="Compare bikes" className="fixed inset-x-0 bottom-0 z-40 bg-dark px-4 py-3 text-on-dark sm:px-6">
       <div className="mx-auto flex max-w-6xl items-center gap-3 sm:gap-4">
-        <span className="text-sm">{ids.length} {ids.length === 1 ? "bike" : "bikes"} selected{ids.length < 2 && <span className="hidden text-muted sm:inline"> · pick at least 2</span>}</span>
-        <button type="button" onClick={() => write([])} className="text-sm text-muted underline-offset-4 hover:underline">Clear</button>
+        <span className="text-sm">{ids.length} {ids.length === 1 ? "bike" : "bikes"} selected{ids.length < 2 && <span className="hidden text-on-dark-soft sm:inline">, pick at least 2</span>}</span>
+        <button type="button" onClick={() => write([])} className="text-sm text-on-dark-soft underline-offset-4 hover:text-on-dark hover:underline">Clear</button>
         {ids.length >= 2 ? (
-          <Link href={`/compare?ids=${ids.join(",")}`} className="btn-primary ml-auto whitespace-nowrap">Compare<span className="hidden sm:inline">&nbsp;now</span></Link>
+          <Link href={`/compare?ids=${ids.join(",")}`} className="btn-primary ml-auto whitespace-nowrap"><span>Compare<span className="hidden sm:inline"> now</span></span></Link>
         ) : (
-          <span className="btn-primary ml-auto cursor-not-allowed whitespace-nowrap opacity-50" aria-disabled>Compare<span className="hidden sm:inline">&nbsp;now</span></span>
+          <span className="btn-primary ml-auto cursor-not-allowed whitespace-nowrap opacity-50" aria-disabled><span>Compare<span className="hidden sm:inline"> now</span></span></span>
         )}
       </div>
     </div>

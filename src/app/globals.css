@@ -1,94 +1,154 @@
 @import "tailwindcss";
 
 /* ============ tokens ============ */
+/* From DESIGN.md: warm cream canvas, warm ink, coral primary, dark warm surfaces. Where a DESIGN.md
+   pairing is below WCAG AA the nearest passing value is used and noted. */
 @theme {
-  --color-ink: #16181d;
-  --color-muted: #5b606a;
-  --color-line: #dedfe2;
-  --color-field: #7a7f89;
-  --color-wash: #f2f2ef;
-  --color-accent: #f5b301;
-  --color-accent-dark: #d99f00;
-  --color-brand: #b3261e;
-  --color-brand-dark: #8f1e18;
-  --color-ok: #1f6b3a;
+  --color-ink: #141413;
+  --color-body: #3d3d3a;
+  --color-muted: #66645e;        /* DESIGN muted #6c6a64, a touch darker so it stays 4.5:1 on cream cards */
+  --color-muted-soft: #8e8b82;
+  --color-line: #e6dfd8;         /* hairline: real tables only */
+  --color-field: #8e8b82;        /* form-field edge: 3.2:1, the hairline (1.25:1) is too faint for inputs */
+  --color-canvas: #faf9f5;       /* taste-skill-ignore: DESIGN.md brand canvas */
+  --color-wash: #f5f0e8;         /* surface-soft: soft bands */
+  --color-card: #efe9de;         /* surface-card: content cards */
+  --color-cream: #e8e0d2;        /* surface-cream-strong: selected tabs, chips inside cards */
+  --color-dark: #181715;         /* surface-dark: price plates, footer, floating dark cards */
+  --color-dark-2: #252320;       /* surface-dark-elevated */
+  --color-on-dark: #faf9f5;      /* taste-skill-ignore: DESIGN.md on-dark */
+  --color-on-dark-soft: #a09d96;
+  --color-accent: #cc785c;       /* taste-skill-ignore: DESIGN.md primary coral: buttons only (ink text, 5.6:1; white on it is 3.3:1) */
+  --color-accent-dark: #a9583e;  /* primary-active: pressed buttons (white text, 5.1:1) */
+  --color-brand: #a9583e;        /* inline links: the coral itself is 3.1:1 on cream, this is 4.8:1 */
+  --color-brand-dark: #8c4530;
+  --color-error: #c64545;
+  --color-ok: #2f6b3f;           /* DESIGN success #5db872 is a dot colour; text needs this (6:1) */
   --color-warn: #8a5a00;
+  --color-star: #b5762f;
+  --color-on-accent: #141413;   /* text on coral, the same in both themes */
+  --color-snow: #faf9f5;         /* taste-skill-ignore: DESIGN.md cream; hero snow caps, the same in both themes */
 
-  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
-  --font-body: var(--font-public), ui-sans-serif, system-ui, sans-serif;
-  --font-deva: var(--font-deva), sans-serif;
+  --font-display: var(--font-serif), "EB Garamond", Garamond, "Times New Roman", serif;
+  --font-body: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-deva: var(--font-devanagari), serif;
 
-  /* the only shadow: for layers that float above the page (menus, toasts, banners) */
-  --shadow-pop: 0 1px 2px rgb(22 24 29 / 0.08), 0 12px 32px -8px rgb(22 24 29 / 0.28);
+  /* only for things that truly float: menus, toasts, dialogs */
+  --shadow-pop: 0 1px 3px rgb(20 20 19 / 0.08), 0 16px 32px -16px rgb(20 20 19 / 0.28);
 }
+
+/* ============ dark theme ============ */
+/* DESIGN.md has no dark mode; this one is built from its own dark surfaces (#181715 / #252320) with
+   cream text and the same coral. Every text pairing below is 4.5:1 or better. It follows the device
+   setting unless the visitor picks a theme with the header toggle (stored as data-theme on <html>). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-ink: #faf9f5;  /* taste-skill-ignore: DESIGN.md cream */
+    --color-body: #e6e1d7;
+    --color-muted: #a8a49c;
+    --color-muted-soft: #77746d;
+    --color-line: #34312c;
+    --color-field: #77746d;
+    --color-canvas: #181715;
+    --color-wash: #1f1e1b;
+    --color-card: #252320;
+    --color-cream: #302d29;
+    --color-dark: #0f0e0d;
+    --color-dark-2: #2a2724;
+    --color-brand: #e3967a;
+    --color-brand-dark: #f0b39c;
+    --color-error: #ef8080;
+    --color-ok: #7fc493;
+    --color-warn: #e6b45c;
+    --color-star: #d4954a;
+    --shadow-pop: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 32px -16px rgb(0 0 0 / 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --color-ink: #faf9f5;  /* taste-skill-ignore: DESIGN.md cream */
+  --color-body: #e6e1d7;
+  --color-muted: #a8a49c;
+  --color-muted-soft: #77746d;
+  --color-line: #34312c;
+  --color-field: #77746d;
+  --color-canvas: #181715;
+  --color-wash: #1f1e1b;
+  --color-card: #252320;
+  --color-cream: #302d29;
+  --color-dark: #0f0e0d;
+  --color-dark-2: #2a2724;
+  --color-brand: #e3967a;
+  --color-brand-dark: #f0b39c;
+  --color-error: #ef8080;
+  --color-ok: #7fc493;
+  --color-warn: #e6b45c;
+  --color-star: #d4954a;
+  --shadow-pop: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 32px -16px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
 
 /* ============ base ============ */
 @layer base {
   html {
     overflow-x: clip;
-    background: #fff;
-    color: var(--color-ink);
+    background: var(--color-canvas);
+    color: var(--color-body);
   }
   body {
     font-family: var(--font-body);
-    line-height: 1.65;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-stretch: 85%;
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1.05;
+    color: var(--color-ink);
   }
   :focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
-  :is(a, button, summary):active { opacity: 0.8; }
+  ::selection { background: var(--color-cream); color: var(--color-ink); }
   summary { cursor: pointer; }
   summary::-webkit-details-marker { display: none; }
 }
 
 /* ============ surfaces ============ */
-@utility bg-surface { background-color: #fff; }
-@utility bg-surface-sunk { background-color: var(--color-wash); }
+/* Depth comes from tone steps, not lines or shadows. */
+@utility bg-surface { background-color: var(--color-card); }
+@utility bg-surface-sunk { background-color: var(--color-cream); }
 
 /* ============ controls ============ */
 @utility input {
-  @apply min-h-11 w-full rounded-md border border-field bg-white px-3 py-2 text-base outline-none placeholder:text-muted hover:border-ink focus:border-ink focus-visible:ring-2 focus-visible:ring-ink/25 sm:text-[15px];
+  @apply min-h-10 w-full rounded-lg border border-field bg-canvas px-3.5 py-2 text-base text-ink outline-none transition-[border-color,box-shadow] placeholder:text-muted focus:border-accent focus:ring-[3px] focus:ring-accent/20;
 }
 @utility btn {
-  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-[15px] font-semibold transition-transform active:scale-[0.97] disabled:opacity-50;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-[transform,background-color,color] duration-150 active:scale-[0.97] disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-accent text-ink hover:bg-accent-dark;
+  @apply btn bg-accent text-on-accent active:bg-accent-dark active:text-white;
 }
+/* secondary: a tone step instead of an outline (deeper cream on the page, canvas inside cream cards) */
 @utility btn-outline {
-  @apply btn border border-ink bg-white text-ink hover:bg-wash;
+  @apply btn bg-cream text-ink in-[.bg-surface]:bg-canvas active:bg-card;
+}
+@utility btn-on-dark {
+  @apply btn bg-dark-2 text-on-dark active:bg-black;
 }
 @utility label {
-  @apply mb-1 block text-sm font-medium;
+  @apply mb-1 block text-sm font-medium text-ink;
 }
 @utility font-display {
   font-family: var(--font-display);
-  font-stretch: 85%;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: -0.02em;
 }
-
-/* ============ photos ============ */
-/* A faint ink tint so uploaded photos of every colour sit calmly on the white page. */
-@utility img-treated {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: linear-gradient(180deg, rgb(22 24 29 / 0) 60%, rgb(22 24 29 / 0.28) 100%);
-  }
+@utility link {
+  @apply text-brand underline decoration-1 underline-offset-4 active:text-brand-dark;
 }
 
 /* ============ accessibility ============ */
@@ -103,3 +163,30 @@
   color: #fff;
 }
 .skip-link:focus { top: 0.75rem; }
+
+/* ============ home hero scene ============ */
+/* A slow bob on the floating bike cards, layered on top of each card's own 3D turn. */
+@keyframes hero-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+.hero-float {
+  animation: hero-float 6s ease-in-out infinite;
+  transition: scale 200ms ease;
+}
+.hero-float:hover { scale: 1.04; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-float { animation: none; transition: none; }
+  .hero-float:hover { scale: none; }
+}
+
+/* ============ entrances (see components/Reveal.tsx) ============ */
+.reveal-ready [data-reveal]:not([data-shown]) { opacity: 0; translate: 0 24px; }
+[data-reveal] {
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), translate 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 75ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready [data-reveal]:not([data-shown]) { translate: none; }
+  [data-reveal] { transition: opacity 200ms linear; transition-delay: 0ms; }
+}

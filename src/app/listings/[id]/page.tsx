@@ -58,7 +58,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
   const wa = `https://wa.me/${l.phone}?text=${encodeURIComponent(`Hi, is your ${l.brand} ${l.model} still available?`)}`;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
       {sp.posted && <Banner tone="ok">Your ad is posted and waiting for review. It will go live as soon as it is approved.</Banner>}
       {sp.edited && <Banner tone="ok">Changes saved. The ad will be reviewed again before it shows publicly.</Banner>}
       {l.status === "PENDING" && !sp.posted && !sp.edited && <Banner tone="warn">This ad is waiting for review and is only visible to you{isAdmin && !isOwner ? " and admins" : ""}.</Banner>}
@@ -69,25 +69,25 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
         <div>
           <Gallery images={l.images.map((i) => i.url)} alt={l.title} />
 
-          <h1 className="mt-6 font-display text-3xl font-semibold">{l.title}</h1>
-          <p className="mt-1 text-sm text-muted">Posted {timeAgo(l.createdAt)} in {l.city}</p>
+          <h1 className="mt-8 text-[36px] sm:text-[48px]">{l.title}</h1>
+          <p className="mt-2 text-sm text-muted">Posted {timeAgo(l.createdAt)} in {l.city}</p>
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 rounded-lg border border-line bg-surface p-5 sm:grid-cols-4">
+          <dl className="mt-8 grid grid-cols-2 gap-5 rounded-xl bg-surface p-6 sm:grid-cols-4">
             {specs.map(([k, v]) => (
               <div key={k}>
                 <dt className="text-sm text-muted">{k}</dt>
-                <dd className="mt-0.5 font-medium">{v}</dd>
+                <dd className="mt-0.5 font-medium text-ink">{v}</dd>
               </div>
             ))}
           </dl>
 
-          <h2 className="font-display mt-8 text-2xl font-semibold">Description</h2>
-          <p className="mt-2 whitespace-pre-line leading-[1.7]">{l.description}</p>
+          <h2 className="mt-10 text-[28px] sm:text-[36px]">Description</h2>
+          <p className="mt-3 max-w-[65ch] whitespace-pre-line leading-[1.7] text-ink">{l.description}</p>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-lg border border-line bg-surface p-6">
-            <div className="font-display text-4xl">{formatNpr(l.priceNpr)}</div>
+          <div className="rounded-xl bg-surface p-6">
+            <div className="font-display text-5xl tabular-nums lining-nums text-ink">{formatNpr(l.priceNpr)}</div>
             <div className="text-sm text-muted">{l.negotiable ? "Negotiable" : "Fixed price"}</div>
 
             {isOwner ? (
@@ -115,7 +115,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
                 ) : (
                   <Link href={`/login?next=/listings/${l.id}`} className="btn-outline w-full">Log in to see phone number</Link>
                 )}
-                <CompareToggle id={l.id} label={`${l.brand} ${l.model}`} className="w-full py-2 text-sm" wide />
+                <CompareToggle id={l.id} label={`${l.brand} ${l.model}`} className="min-h-10 w-full rounded-lg text-sm" wide />
                 <form action={toggleFavorite}>
                   <input type="hidden" name="id" value={l.id} />
                   <button className="w-full pt-1 text-sm text-muted hover:text-ink">{saved ? "Remove from saved" : "Save this bike"}</button>
@@ -124,16 +124,16 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             ) : null}
           </div>
 
-          <div className="rounded-lg border border-line bg-surface p-5 text-sm ">
-            <Link href={`/sellers/${l.seller.id}`} className="font-medium hover:underline">{sellerName}</Link>
+          <div className="rounded-xl bg-surface p-6 text-sm">
+            <Link href={`/sellers/${l.seller.id}`} className="font-display text-2xl text-ink hover:underline">{sellerName}</Link>
             <div className="text-muted">Member since {l.seller.createdAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
             <div className="mt-1">
               {rating._avg.rating ? <Stars avg={rating._avg.rating} count={rating._count._all} /> : <span className="text-muted">No reviews yet</span>}
-              {" "}<Link href={`/sellers/${l.seller.id}`} className="text-brand underline underline-offset-4">{isOwner ? "See reviews" : "Reviews"}</Link>
+              {" "}<Link href={`/sellers/${l.seller.id}`} className="link">{isOwner ? "See reviews" : "Reviews"}</Link>
             </div>
           </div>
 
-          <div className="rounded-lg bg-surface-sunk p-4 text-sm text-muted">
+          <div className="rounded-xl bg-wash p-5 text-sm text-body">
             We do not inspect bikes or verify listings. Check the bluebook and the owner’s citizenship before paying, and never send money in advance.
           </div>
 
@@ -142,7 +142,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             <form action={deleteListing}>
               <input type="hidden" name="id" value={l.id} />
               <input type="hidden" name="redirect" value={isOwner ? "/my" : "/admin"} />
-              <ConfirmButton message="Delete this ad permanently?" className="text-sm text-brand hover:underline">Delete ad</ConfirmButton>
+              <ConfirmButton message="Delete this ad permanently?" className="text-sm link">Delete ad</ConfirmButton>
             </form>
           )}
         </aside>
@@ -152,6 +152,6 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
 }
 
 function Banner({ tone, children }: { tone: "ok" | "warn" | "bad"; children: React.ReactNode }) {
-  const c = { ok: "border-ok/30 bg-ok/5 text-ok", warn: "border-warn/30 bg-warn/5 text-warn", bad: "border-brand/30 bg-brand/5 text-brand" }[tone];
-  return <div className={`mb-6 rounded-xl border px-4 py-3 text-sm ${c}`}>{children}</div>;
+  const c = { ok: "bg-ok/10 text-ok", warn: "bg-warn/10 text-warn", bad: "bg-error/10 text-error" }[tone];
+  return <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${c}`}>{children}</div>;
 }

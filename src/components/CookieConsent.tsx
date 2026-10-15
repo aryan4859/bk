@@ -43,16 +43,16 @@ export function CookieConsent() {
       aria-labelledby="cookie-title"
       aria-describedby="cookie-desc"
       onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-lg border border-line bg-surface p-5 shadow-pop sm:bottom-5"
+      className="fixed inset-x-3 bottom-[calc(var(--compare-bar,0px)+0.75rem)] z-50 rounded-xl bg-dark p-6 text-on-dark-soft shadow-pop sm:inset-x-auto sm:bottom-[calc(var(--compare-bar,0px)+1.25rem)] sm:right-5 sm:max-w-sm"
     >
-      <h2 id="cookie-title" className="font-display text-xl font-semibold">Cookies</h2>
-      <p id="cookie-desc" className="mt-1 text-[15px] text-muted">
+      <h2 id="cookie-title" className="text-[28px] text-on-dark">Cookies</h2>
+      <p id="cookie-desc" className="mt-2 text-sm">
         We use one essential cookie to keep you logged in. We would only use optional cookies (such as analytics or embedded maps) if you accept them, and we do not use any yet.
-        See the <Link href="/cookies" className="text-brand underline">cookie policy</Link> and <Link href="/privacy" className="text-brand underline">privacy policy</Link>.
+        See the <Link href="/cookies" className="text-on-dark underline underline-offset-4">cookie policy</Link> and <Link href="/privacy" className="text-on-dark underline underline-offset-4">privacy policy</Link>.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button ref={first} type="button" onClick={() => choose("all")} className="btn-primary">Accept all</button>
-        <button type="button" onClick={() => choose("essential")} className="btn-outline">Essential only</button>
+        <button type="button" onClick={() => choose("essential")} className="btn-on-dark">Essential only</button>
       </div>
     </div>
   );

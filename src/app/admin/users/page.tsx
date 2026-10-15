@@ -29,16 +29,16 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold">Users <span className="text-lg font-normal text-muted">{total}</span></h1>
+        <h1 className="text-4xl">Users <span className="text-lg font-normal text-muted">{total}</span></h1>
         <form className="flex w-full gap-2 sm:w-auto">
           <input name="q" defaultValue={q} placeholder="Email or name" className="input min-w-0 flex-1 py-1.5 sm:w-60 sm:flex-none" />
           <button className="btn-outline py-1.5">Search</button>
         </form>
       </div>
 
-      <div className="mt-5 overflow-x-auto rounded-lg border border-line bg-surface">
-        <table className="w-full text-left text-[15px]">
-          <thead className="border-b border-line text-sm text-muted">
+      <div className="mt-5 overflow-x-auto rounded-xl bg-surface">
+        <table className="w-full text-left text-base">
+          <thead className="bg-cream text-sm text-muted">
             <tr>
               <th className="p-3 font-medium">User</th>
               <th className="p-3 font-medium">Ads</th>
@@ -47,7 +47,7 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
               <th className="p-3 font-medium"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line">
+          <tbody className="[&>tr:nth-child(even)]:bg-wash">
             {users.map((u) => (
               <tr key={u.id}>
                 <td className="p-3">
@@ -58,7 +58,7 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
                 <td className="whitespace-nowrap p-3 text-muted">{u.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
                 <td className="p-3">
                   {u.banned ? <span className="rounded bg-brand/10 px-2 py-0.5 text-xs text-brand">Suspended</span>
-                    : u.role === "ADMIN" ? <span className="rounded bg-ink px-2 py-0.5 text-xs text-white">Admin</span>
+                    : u.role === "ADMIN" ? <span className="rounded-full bg-dark px-2.5 py-0.5 text-xs font-medium text-on-dark">Admin</span>
                     : <span className="text-muted">Active</span>}
                 </td>
                 <td className="p-3">
@@ -69,8 +69,8 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
                           <input type="hidden" name="id" value={u.id} />
                           <input type="hidden" name="ban" value={u.banned ? "0" : "1"} />
                           {u.banned
-                            ? <button className="text-brand hover:underline">Restore</button>
-                            : <ConfirmButton message={`Suspend ${u.email}? Their live ads will be taken down.`} className="text-muted hover:text-brand">Suspend</ConfirmButton>}
+                            ? <button className="link">Restore</button>
+                            : <ConfirmButton message={`Suspend ${u.email}? Their live ads will be taken down.`} className="text-muted hover:text-error">Suspend</ConfirmButton>}
                         </form>
                       )}
                       {!u.banned && (

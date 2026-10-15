@@ -12,13 +12,13 @@ export default function ContactPage() {
       <PageHero title="Contact us" subtitle={`Who runs ${BUSINESS.siteName} and how to reach us.`} />
       <div className="mx-auto max-w-2xl px-6 py-12">
         {rows.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-line p-8 text-center text-muted">Contact details are being added. Please check back soon.</p>
+          <p className="rounded-xl bg-surface p-8 text-center text-muted">Contact details are being added. Please check back soon.</p>
         ) : (
-          <dl className="divide-y divide-line rounded-lg border border-line bg-surface ">
+          <dl className="space-y-2">
             {rows.map(([k, v]) => (
-              <div key={k} className="grid gap-1 p-4 sm:grid-cols-[180px_1fr]">
+              <div key={k} className="grid gap-1 rounded-xl bg-surface p-4 sm:grid-cols-[180px_1fr]">
                 <dt className="text-sm text-muted">{k}</dt>
-                <dd className="font-medium"><BusinessValue label={k} value={v} className="text-brand underline" /></dd>
+                <dd className="font-medium"><BusinessValue label={k} value={v} className="link" /></dd>
               </div>
             ))}
           </dl>

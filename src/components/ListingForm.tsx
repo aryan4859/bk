@@ -22,7 +22,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
   const [state, formAction, pending] = useActionState(action, undefined);
   const [previews, setPreviews] = useState<string[]>([]);
   const fe = state?.fieldErrors ?? {};
-  const err = (k: string) => fe[k] && <p className="mt-1 text-sm text-brand">{fe[k]}</p>;
+  const err = (k: string) => fe[k] && <p className="mt-1 text-sm text-error">{fe[k]}</p>;
   const year = new Date().getFullYear();
   // after a failed submit React resets the form, so re-seed it from what the server echoed back
   const v = (k: keyof Initial, fallback: string | number | undefined) => String(state?.values?.[k] ?? fallback ?? "");
@@ -30,7 +30,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
 
   return (
     <form key={state?.values ? JSON.stringify(state.values) : "fresh"} action={formAction} className="space-y-8">
-      {state?.error && <div role="alert" className="rounded-md border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-brand">{state.error}{state.fieldErrors && " Your photos need to be chosen again."}</div>}
+      {state?.error && <div role="alert" className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{state.error}{state.fieldErrors && " Your photos need to be chosen again."}</div>}
 
       <fieldset className="space-y-4">
         <legend className="mb-1 text-lg font-semibold">Photos</legend>
@@ -51,7 +51,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
         <input
           type="file" name="images" accept="image/jpeg,image/png,image/webp" multiple
           onChange={(e) => setPreviews(Array.from(e.target.files ?? []).map((f) => URL.createObjectURL(f)))}
-          aria-label="Choose photos" className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-sm hover:file:border-ink"
+          aria-label="Choose photos" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-cream file:font-medium file:text-ink file:px-3 file:py-2 file:text-sm "
         />
         {previews.length > 0 && (
           <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
@@ -99,7 +99,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
           <label className="label" htmlFor="ownerCount">Number of owners</label>
           <input id="ownerCount" name="ownerCount" type="number" min={1} max={10} defaultValue={v("ownerCount", initial?.ownerCount ?? 1)} className="input" />
         </div>
-        <label className="flex items-center gap-2 text-[15px] sm:col-span-2">
+        <label className="flex items-center gap-2 text-base sm:col-span-2">
           <input type="checkbox" name="bluebookOk" defaultChecked={checked("bluebookOk", initial?.bluebookOk ?? false)} /> The bluebook is up to date and I have it with me
         </label>
       </fieldset>
@@ -144,9 +144,9 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
       </fieldset>
 
       <div>
-        <label className="flex items-start gap-2 text-[15px]">
+        <label className="flex items-start gap-2 text-base">
           <input type="checkbox" name="confirm" required className="mt-1 size-4 shrink-0 accent-brand" />
-          <span>I own this bike or am allowed to sell it, and the details and photos are accurate. I agree to the <Link href="/terms" target="_blank" className="text-brand underline">terms</Link> and <Link href="/privacy" target="_blank" className="text-brand underline">privacy policy</Link>.</span>
+          <span>I own this bike or am allowed to sell it, and the details and photos are accurate. I agree to the <Link href="/terms" target="_blank" className="link">terms</Link> and <Link href="/privacy" target="_blank" className="link">privacy policy</Link>.</span>
         </label>
         {err("confirm")}
         <p className="mt-2 text-sm text-muted">Your mobile number is shown to logged-in users who view your ad. Photos and details are public.</p>

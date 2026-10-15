@@ -6,7 +6,7 @@ test.describe("compare bikes", () => {
     await page.getByRole("button", { name: /^Compare / }).first().click();
     const bar = page.getByRole("region", { name: "Compare bikes" });
     await expect(bar).toContainText("1 bike selected");
-    await expect(bar.getByText("Compare now")).toHaveAttribute("aria-disabled", "true");
+    await expect(bar.locator("[aria-disabled=true]")).toContainText("Compare now");
 
     await page.goto("/listings?brand=Honda");
     await page.getByRole("button", { name: /^Compare / }).first().click(); // selection survives navigation

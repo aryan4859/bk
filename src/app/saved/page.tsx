@@ -30,9 +30,9 @@ export default async function Saved() {
         {searches.length === 0 ? (
           <p className="mt-4 text-muted">No saved searches. Use filters on <Link href="/listings" className="text-brand hover:underline">Browse</Link>, then tap “Email me new matches”.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-surface">
+          <ul className="mt-4 space-y-2">
             {searches.map((s) => (
-              <li key={s.id} className="flex items-center gap-4 p-4">
+              <li key={s.id} className="flex items-center gap-4 rounded-xl bg-surface p-4">
                 <Link href={`/listings?${s.query}`} className="min-w-0 flex-1 truncate font-medium hover:underline">{s.label}</Link>
                 <form action={deleteSavedSearch}>
                   <input type="hidden" name="id" value={s.id} />
@@ -44,7 +44,7 @@ export default async function Saved() {
         )}
       </section>
       {favs.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line p-10 text-center text-muted">
+        <p className="rounded-xl bg-surface p-10 text-center text-muted">
           Nothing saved yet. <Link href="/listings" className="text-brand hover:underline">Browse bikes</Link> and tap “Save this bike”.
         </p>
       ) : (

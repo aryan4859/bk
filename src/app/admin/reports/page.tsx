@@ -16,18 +16,18 @@ export default async function AdminReports({ searchParams }: PageProps<"/admin/r
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">Reports</h1>
+      <h1 className="text-4xl">Reports</h1>
       <div className="mt-5 flex gap-2 text-sm">
-        <Link href="/admin/reports" className={`rounded-full border px-3 py-1 ${!resolved ? "border-ink bg-ink text-white" : "border-line bg-surface"}`}>Open</Link>
-        <Link href="/admin/reports?show=resolved" className={`rounded-full border px-3 py-1 ${resolved ? "border-ink bg-ink text-white" : "border-line bg-surface"}`}>Resolved</Link>
+        <Link href="/admin/reports" className={`rounded-lg px-3.5 py-1.5 font-medium ${!resolved ? "bg-cream text-ink" : "text-muted hover:bg-wash"}`}>Open</Link>
+        <Link href="/admin/reports?show=resolved" className={`rounded-lg px-3.5 py-1.5 font-medium ${resolved ? "bg-cream text-ink" : "text-muted hover:bg-wash"}`}>Resolved</Link>
       </div>
 
       {reports.length === 0 ? (
-        <p className="mt-6 rounded-lg border border-dashed border-line p-10 text-center text-muted">{resolved ? "Nothing resolved yet." : "No open reports."}</p>
+        <p className="mt-6 rounded-xl bg-surface p-10 text-center text-muted">{resolved ? "Nothing resolved yet." : "No open reports."}</p>
       ) : (
-        <ul className="mt-5 divide-y divide-line rounded-lg border border-line bg-surface">
+        <ul className="mt-5 space-y-2">
           {reports.map((r) => (
-            <li key={r.id} className="p-4">
+            <li key={r.id} className="rounded-xl bg-surface p-4">
               <Link href={`/listings/${r.listing.id}`} className="font-medium hover:underline">{r.listing.title}</Link>
               <p className="mt-1">{r.reason}</p>
               <p className="text-sm text-muted">By {r.reporter.email} · {timeAgo(r.createdAt)} · seller {r.listing.seller.email}</p>

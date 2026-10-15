@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRating, reviewSchema, stars } from "@/lib/reviews";
+import { formatRating, reviewSchema } from "@/lib/reviews";
 
 describe("reviewSchema", () => {
   it.each([1, 3, 5, "4"])("accepts rating %s", (rating) => {
@@ -19,10 +19,7 @@ describe("reviewSchema", () => {
 });
 
 describe("rating display", () => {
-  it("renders stars and one decimal", () => {
-    expect(stars(4)).toBe("★★★★☆");
-    expect(stars(4.6)).toBe("★★★★★");
-    expect(stars(1)).toBe("★☆☆☆☆");
+  it("shows one decimal", () => {
     expect(formatRating(4.25)).toBe("4.3");
     expect(formatRating(5)).toBe("5.0");
   });
