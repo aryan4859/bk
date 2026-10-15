@@ -19,8 +19,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Build machines can report dozens of cores; one build worker per core blew past an 8 GB limit.
+  // Size the pool by free memory and cap it, and skip the source maps used only for prerender errors.
+  enablePrerenderSourceMaps: false,
   experimental: {
     serverActions: { bodySizeLimit: "25mb" },
+    cpus: 2,
+    memoryBasedWorkersCount: true,
   },
   turbopack: {
     rules: {

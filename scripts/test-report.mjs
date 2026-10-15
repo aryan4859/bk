@@ -15,7 +15,7 @@ const sec = (ms) => (ms / 1000).toFixed(1) + "s";
 const icon = (ok) => (ok ? "✅ PASS" : "❌ FAIL");
 
 console.log("1/5 lint");       const lint = run("npx", ["eslint"]);
-console.log("2/5 type check"); const tsc = run("npx", ["tsc", "--noEmit"]);
+console.log("2/5 type check"); const tsc = run("npx", ["tsc", "--noEmit", "-p", "tsconfig.test.json"]); // app + tests
 console.log("3/5 unit + integration (vitest)");
 run("node", ["scripts/test-db.mjs"]);
 run("npx", ["vitest", "run", "--reporter=json", "--outputFile=test-results/vitest.json"]);
