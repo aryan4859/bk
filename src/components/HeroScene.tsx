@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatNpr } from "@/lib/format";
 
 export type HeroCard = { id: string; title: string; priceNpr: number; url: string };
@@ -30,6 +30,7 @@ const CARD_POSES = [
  */
 export function HeroScene({ cards }: { cards: HeroCard[] }) {
   const root = useRef<HTMLDivElement>(null);
+  const [gone, setGone] = useState<string[]>([]); // cards whose photo failed to load
 
   useEffect(() => {
     const el = root.current;
@@ -122,7 +123,7 @@ export function HeroScene({ cards }: { cards: HeroCard[] }) {
           <path className="stroke-accent" strokeWidth="2.5" strokeDasharray="9 7" d="M200 300 V229" />
         </svg>
         {/* the bikes */}
-        {cards.slice(0, CARD_POSES.length).map((c, i) => {
+        {cards.filter((c) => !gone.includes(c.id)).slice(0, CARD_POSES.length).map((c, i) => {
           const pose = CARD_POSES[i];
           return (
             <div key={c.id} className={`absolute ${pose.box}`} style={z(pose.depth)}>
@@ -132,7 +133,7 @@ export function HeroScene({ cards }: { cards: HeroCard[] }) {
                 style={{ transform: pose.turn, animationDelay: pose.delay }}
               >
                 <span className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-cream">
-                  <Image src={c.url} alt={c.title} fill sizes="(min-width: 1024px) 220px, 40vw" priority={i === 0} className="object-cover" />
+                  <Image src={c.url} alt={c.title} fill sizes="(min-width: 1024px) 220px, 40vw" priority={i === 0} onError={() => setGone((g) => [...g, c.id])} className="object-cover" />
                 </span>
                 <span className={`absolute -bottom-3 left-3 z-10 whitespace-nowrap rounded-md bg-dark px-2 py-0.5 font-display tabular-nums lining-nums text-on-dark ${i === 0 ? "text-lg" : "text-base"}`}>
                   {formatNpr(c.priceNpr)}

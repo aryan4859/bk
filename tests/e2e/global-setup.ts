@@ -33,13 +33,15 @@ export default async function globalSetup() {
   const dio = await mk({ title: "Honda Dio scooter", brand: "Honda", model: "Dio", type: "SCOOTER", year: 2021, kmDriven: 4000, priceNpr: 215000, city: "Pokhara", ownerCount: 2 });
   const featured = await mk({ title: "KTM Duke 250 featured", brand: "KTM", model: "Duke 250", year: 2022, kmDriven: 3000, priceNpr: 520000, city: "Kathmandu", featuredUntil: new Date(Date.now() + 7 * 86_400_000), createdAt: new Date("2025-01-01") });
   const pending = await mk({ title: "Hero Splendor awaiting approval", brand: "Hero", model: "Splendor", year: 2016, kmDriven: 40000, priceNpr: 90000, city: "Butwal", status: "PENDING" });
+  // photo file that no longer exists (like ads whose photos were on a wiped server disk)
+  const deadPhoto = await db.listing.create({ data: { ...base, type: "MOTORCYCLE", ownerCount: 1, sellerId: seller.id, title: "Mahindra Mojo with a lost photo", brand: "Mahindra", model: "Mojo", year: 2017, kmDriven: 30000, priceNpr: 180000, city: "Dharan", createdAt: new Date("2024-01-01"), images: { create: [{ url: "/uploads/000000000000000000000000.webp", position: 0 }] } } });
   const pendingHidden = await mk({ title: "Suzuki Gixxer never approved", brand: "Suzuki", model: "Gixxer", year: 2018, kmDriven: 22000, priceNpr: 260000, city: "Lalitpur", status: "PENDING" });
   const adminOwn = await mk({ title: "Admin's Vespa", brand: "Vespa", model: "VXL 150", type: "SCOOTER", year: 2020, kmDriven: 8000, priceNpr: 380000, city: "Lalitpur", sellerId: admin.id });
 
   mkdirSync("test-results", { recursive: true });
   writeFileSync("test-results/fixtures.json", JSON.stringify({
     users: { admin, seller, buyer, stranger },
-    listings: { pulsar, dio, featured, pending, pendingHidden, adminOwn, filler: filler.map((l) => l.id) },
+    listings: { pulsar, dio, featured, pending, pendingHidden, adminOwn, deadPhoto, filler: filler.map((l) => l.id) },
   }, null, 2));
   await db.$disconnect();
 }

@@ -5,7 +5,7 @@ import { projectEnv } from "../helpers/env";
 
 type Fx = {
   users: Record<"admin" | "seller" | "buyer" | "stranger", { id: string; email: string; name: string }>;
-  listings: Record<"pulsar" | "dio" | "featured" | "pending" | "pendingHidden" | "adminOwn", { id: string; title: string }> & { filler: string[] };
+  listings: Record<"pulsar" | "dio" | "featured" | "pending" | "pendingHidden" | "adminOwn" | "deadPhoto", { id: string; title: string }> & { filler: string[] };
 };
 export const fx = (): Fx => JSON.parse(readFileSync("test-results/fixtures.json", "utf8"));
 
