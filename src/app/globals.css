@@ -228,7 +228,8 @@
 .preloader { display: none; }
 html[data-preload] .preloader { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; }
 html[data-preload="leaving"] .preloader { pointer-events: none; }
-.preloader svg { transform-origin: 0 0; will-change: transform; }
+/* visible: letters shift right to meet the header's spacing and would otherwise be cut at the viewBox edge */
+.preloader svg { transform-origin: 0 0; will-change: transform; overflow: visible; }
 [data-logo], [data-logo-sub] { transition: opacity 300ms ease-out; }
 html[data-preload="run"] [data-logo], html[data-preload="run"] [data-logo-sub] { opacity: 0; }
 /* failsafe: if the page's script never runs (blocked or failed), the cover lifts and the logo returns on its own */

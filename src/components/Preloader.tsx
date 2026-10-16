@@ -53,10 +53,16 @@ export function Preloader() {
 
       const easing = "cubic-bezier(0.65, 0, 0.35, 1)";
       bg.animate({ backgroundColor: ["var(--color-canvas)", "transparent"] }, { duration: FLIGHT_MS, easing, fill: "forwards" });
-      // the outlines carry the footer's -0.04em tracking; move each letter to the header's own tracking on the way
-      const track = 0.04 * 200 + (parseFloat(css.letterSpacing) || 0) / s;
-      mark.querySelectorAll("path").forEach((path, i) =>
-        path.animate({ transform: ["none", `translateX(${i * track}px)`] }, { duration: FLIGHT_MS, easing, fill: "forwards" }));
+      // land each letter on the matching header letter where the browser actually set it: its kerning, tracking and
+      // pixel snapping differ from the outlines' (which carry the footer's -0.04em tracking), so read them, not predict them
+      const text = logo.firstChild;
+      const pens = text instanceof Text && text.data.length === WORDMARK.letters.length
+        ? WORDMARK.letters.map((_, i) => { const r = document.createRange(); r.setStart(text, i); r.setEnd(text, i + 1); return r.getBoundingClientRect().left; })
+        : null;
+      mark.querySelectorAll("path").forEach((path, i) => {
+        const shift = pens ? (pens[i] - to.left) / s - WORDMARK.letters[i].x : 0;
+        path.animate({ transform: ["none", `translateX(${shift}px)`] }, { duration: FLIGHT_MS, easing, fill: "forwards" });
+      });
       await mark.animate({ transform: ["none", `translate(${dx}px, ${dy}px) scale(${scale})`] }, { duration: FLIGHT_MS, easing, fill: "forwards" }).finished;
       html.dataset.preload = "leaving"; // the real logo fades in under the drawing
       await mark.animate({ opacity: [1, 0] }, { duration: 300, fill: "forwards" }).finished;
