@@ -32,7 +32,7 @@ export async function chat(history: ChatTurn[]): Promise<{ reply: string; listin
         authorization: `Bearer ${key}`,
         "content-type": "application/json",
         "http-referer": process.env.SITE_URL ?? "http://localhost:3000",
-        "x-title": "Sawari",
+        "x-title": "Seto Durbar",
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL?.trim() || DEFAULT_MODEL,

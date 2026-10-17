@@ -26,7 +26,7 @@ export default async function My() {
     <>
     <PageHero title="My account" subtitle={`Signed in as ${user.email}`} />
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <form action={updateName} className="flex max-w-md items-end gap-2 rounded-xl bg-surface p-5">
+      <form action={updateName} className="flex max-w-md items-end gap-2 rounded-lg bg-surface p-5">
         <div className="flex-1">
           <label className="label" htmlFor="name">Display name</label>
           <input id="name" name="name" defaultValue={user.name ?? ""} placeholder="Shown to buyers" className="input" />
@@ -40,11 +40,11 @@ export default async function My() {
       </div>
 
       {listings.length === 0 ? (
-        <p className="mt-6 rounded-xl bg-surface p-8 text-center text-muted">You have not posted anything yet.</p>
+        <p className="mt-6 rounded-lg bg-surface p-8 text-center text-muted">You have not posted anything yet.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {listings.map((l) => (
-            <li key={l.id} className="flex gap-4 rounded-xl bg-surface p-4">
+            <li key={l.id} className="flex gap-4 rounded-lg bg-surface p-4">
               <Link href={`/listings/${l.id}`} className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-surface-sunk">
                 <Photo src={l.images[0]?.url} alt="" />
               </Link>

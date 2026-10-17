@@ -1,10 +1,10 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { THEME_KEY as KEY } from "@/lib/head-scripts";
 import { Icon } from "./Icon";
 
 type Theme = "light" | "dark";
-const KEY = "theme";
 const dark = () => window.matchMedia("(prefers-color-scheme: dark)");
 
 const resolved = (): Theme => {
@@ -45,6 +45,3 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     </button>
   );
 }
-
-/** Runs before first paint (inlined in <head>) so a saved choice never flashes the other theme. */
-export const themeScript = `try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;

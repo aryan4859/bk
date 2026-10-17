@@ -5,10 +5,10 @@ import { SafeImage } from "./SafeImage";
 
 export function Gallery({ images, alt }: { images: string[]; alt: string }) {
   const [i, setI] = useState(0);
-  if (images.length === 0) return <div role="img" aria-label="No photos uploaded" className="aspect-[4/3] rounded-xl bg-surface" />;
+  if (images.length === 0) return <div role="img" aria-label="No photos uploaded" className="aspect-[4/3] rounded-lg bg-surface" />;
   return (
     <div>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-surface">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-surface">
         <SafeImage key={images[i]} src={images[i]} alt={`${alt}, photo ${i + 1} of ${images.length}`} fill priority sizes="(min-width: 1024px) 700px, 100vw" className="object-cover" />
       </div>
       {images.length > 1 && (

@@ -24,7 +24,7 @@ export default async function Inbox() {
     <PageHero title="Messages" subtitle="Your conversations with buyers and sellers." />
     <div className="mx-auto max-w-3xl px-6 py-10">
       {threads.length === 0 ? (
-        <p className="rounded-xl bg-surface p-10 text-center text-muted">No conversations yet.</p>
+        <p className="rounded-lg bg-surface p-10 text-center text-muted">No conversations yet.</p>
       ) : (
         <ul className="space-y-2">
           {threads.map((t) => {
@@ -34,7 +34,7 @@ export default async function Inbox() {
             const buyerName = t.buyer.name ?? t.buyer.email.split("@")[0];
             return (
               <li key={t.id}>
-                <Link href={`/inbox/${t.id}`} className="block rounded-xl bg-surface p-4 transition-colors hover:bg-cream">
+                <Link href={`/inbox/${t.id}`} className="block rounded-lg bg-surface p-4 transition-colors hover:bg-cream">
                   <div className="flex justify-between gap-4">
                     <span className="truncate font-medium">{unread && <span className="mr-2 inline-block size-2 rounded-full bg-accent align-middle" />}{t.listing.title}</span>
                     <span className="shrink-0 text-sm text-muted">{last && timeAgo(last.createdAt)}</span>

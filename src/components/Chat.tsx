@@ -21,7 +21,7 @@ export function Chat({ threadId, messages }: { threadId: string; messages: Msg[]
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [messages.length]);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl bg-surface">
+    <div className="flex flex-col overflow-hidden rounded-lg bg-surface">
       <div className="h-[55vh] space-y-2 overflow-y-auto p-4" role="log" aria-label="Conversation" tabIndex={0}>
         {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">Say hello and ask about the bike.</p>}
         {messages.map((m) => (

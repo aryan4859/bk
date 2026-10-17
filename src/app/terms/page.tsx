@@ -32,7 +32,7 @@ export default function Terms() {
       <p>Buyers who have messaged a seller on {BUSINESS.siteName} can rate that seller from 1 to 5 stars and leave a comment. Reviews come only from real users; we do not publish, buy or ask for fake reviews, and you must not post or request them either. We may remove reviews that are fake, abusive or unrelated to a deal.</p>
 
       <h2>The assistant</h2>
-      <p>&quot;Ask Sawari&quot; is an automated assistant. It searches the ads on the site and explains how the site works, but its answers can be wrong or out of date. Always check the ad itself, and never treat its answers as advice about whether a deal is safe.</p>
+      <p>&quot;Ask Seto Durbar&quot; is an automated assistant. It searches the ads on the site and explains how the site works, but its answers can be wrong or out of date. Always check the ad itself, and never treat its answers as advice about whether a deal is safe.</p>
 
       <h2>Content you post</h2>
       <p>You keep ownership of your content, and you give us permission to display it on the site so we can run the service. You are responsible for it.</p>

@@ -89,8 +89,8 @@ test.describe("phone layout", () => {
 
   test("the assistant opens as a full-screen sheet and closes again", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Ask Sawari" }).click();
-    const panel = page.getByRole("dialog", { name: "Sawari assistant" });
+    await page.getByRole("button", { name: "Ask Seto Durbar" }).click();
+    const panel = page.getByRole("dialog", { name: "Seto Durbar assistant" });
     const box = (await panel.boundingBox())!;
     const vp = page.viewportSize()!;
     expect(Math.round(box.width)).toBe(vp.width);

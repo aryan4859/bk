@@ -13,7 +13,7 @@ export function FilterPanel({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
   return (
-    <details ref={ref} className="rounded-xl bg-surface p-5 lg:[&>summary]:hidden">
+    <details ref={ref} className="rounded-lg bg-surface p-5 lg:[&>summary]:hidden">
       <summary className="btn-outline w-full lg:hidden">Filters and sorting</summary>
       <div className="mt-4 lg:mt-0">{children}</div>
     </details>

@@ -1,37 +1,35 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Fraunces, Inter, Noto_Serif_Devanagari } from "next/font/google";
+import { Inter, Noto_Serif_Devanagari } from "next/font/google";
 import Link from "next/link";
 import { Assistant } from "@/components/Assistant";
 import { BusinessValue } from "@/components/BusinessValue";
 import { CompareBar } from "@/components/Compare";
 import { CookieConsent, CookieSettingsButton } from "@/components/CookieConsent";
 import { CurrentYear } from "@/components/CurrentYear";
-import { FooterWordmark } from "@/components/footer/FooterWordmark";
-import { WORDMARK } from "@/components/footer/wordmark-paths";
+import { HeadScript } from "@/components/HeadScript";
+import { Logo } from "@/components/logo/Logo";
 import { MobileMenu } from "@/components/MobileMenu";
-import { Preloader, preloadScript } from "@/components/Preloader";
-import { Reveal } from "@/components/Reveal";
-import { ThemeToggle, themeScript } from "@/components/ThemeToggle";
+import { Preloader } from "@/components/Preloader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Toast } from "@/components/Toast";
 import { logout } from "@/lib/actions";
 import { assistantConfigured } from "@/lib/assistant/chat";
 import { getUser } from "@/lib/auth";
 import { BUSINESS, businessRows } from "@/lib/business";
 import { readFlash } from "@/lib/flash";
+import { preloadScript, themeScript } from "@/lib/head-scripts";
 import { unreadThreadCount } from "@/lib/queries";
 import "./globals.css";
 
-// Fraunces for headings, Inter for text; Cormorant Garamond only for the wordmark (the preloader and footer outlines are cut from it).
-const serif = Cormorant_Garamond({ variable: "--font-serif", subsets: ["latin"], weight: ["500"] });
+// Inter for everything; the Devanagari face only for the assistant's Nepali name.
 const sans = Inter({ variable: "--font-sans", subsets: ["latin"] });
-const heading = Fraunces({ variable: "--font-heading", subsets: ["latin"], axes: ["SOFT", "opsz"], style: ["normal", "italic"] });
 const deva = Noto_Serif_Devanagari({ variable: "--font-devanagari", subsets: ["devanagari"], weight: ["500"], preload: false });
 
 // browser chrome (address bar on phones) matches the page in each theme
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f4ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#171513" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1d22" },
   ],
 };
 
@@ -43,30 +41,33 @@ export const metadata: Metadata = {
 async function Header() {
   const user = await getUser();
   const unread = user ? await unreadThreadCount(user.id) : 0;
-  const navLink = "text-sm text-muted transition-colors hover:text-ink";
+  const navLink = "text-sm font-medium text-body transition-colors hover:text-accent";
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-8 sm:px-6">
-        <Link href="/" className="flex items-baseline gap-2" aria-label={`${BUSINESS.siteName} home`}>
-          <span data-logo className="font-logo text-[28px] leading-none text-ink">{BUSINESS.siteName}</span>
-          <span data-logo-sub className="font-deva text-sm text-muted" aria-hidden>सवारी</span>
+    <header className="sticky top-0 z-30 border-b border-line bg-raised">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-7 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2" aria-label={`${BUSINESS.siteName} home`}>
+          <Logo />
         </Link>
-        <nav aria-label="Main" className="hidden items-center gap-6 sm:flex">
-          <Link href="/listings" className={navLink}>Browse</Link>
+        <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
+          <Link href="/listings?type=MOTORCYCLE" className={navLink}>Motorcycles</Link>
+          <Link href="/listings?type=SCOOTER" className={navLink}>Scooters</Link>
+          <Link href="/compare" className={navLink}>Compare</Link>
           {user && <Link href="/saved" className={navLink}>Saved</Link>}
-          {user && <Link href="/inbox" className={navLink}>Messages{unread > 0 && <span className="ml-1.5 rounded-full bg-accent px-1.5 py-0.5 text-[11px] font-medium text-on-accent">{unread}</span>}</Link>}
+          {user && <Link href="/inbox" className={navLink}>Messages{unread > 0 && <span className="ml-1.5 rounded bg-accent px-1.5 py-0.5 text-[11px] font-medium text-on-accent">{unread}</span>}</Link>}
           {user?.role === "ADMIN" && <Link href="/admin" className={navLink}>Admin</Link>}
         </nav>
         <MobileMenu
           loggedIn={!!user}
           logout={logout}
           links={[
-            { href: "/listings", label: "Browse" },
+            { href: "/listings?type=MOTORCYCLE", label: "Motorcycles" },
+            { href: "/listings?type=SCOOTER", label: "Scooters" },
+            { href: "/compare", label: "Compare" },
             ...(user ? [{ href: "/saved", label: "Saved" }, { href: "/inbox", label: unread > 0 ? `Messages (${unread} unread)` : "Messages" }, { href: "/my", label: "My account" }] : []),
             ...(user?.role === "ADMIN" ? [{ href: "/admin", label: "Admin" }] : []),
           ]}
         />
-        <div className="flex items-center gap-2 sm:ml-auto sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 md:ml-auto">
           <ThemeToggle />
           <div className="hidden items-center gap-4 sm:flex">
             {user ? (
@@ -78,7 +79,7 @@ async function Header() {
               <Link href="/login" className={navLink}>Log in</Link>
             )}
           </div>
-          <Link href="/sell" className="btn-primary min-h-9 whitespace-nowrap px-3 sm:px-4"><span>Sell<span className="hidden sm:inline"> a bike</span></span></Link>
+          <Link href="/sell" className="btn-primary min-h-9 whitespace-nowrap px-3 sm:px-4"><span>Sell<span className="hidden sm:inline"> your bike</span></span></Link>
         </div>
       </div>
     </header>
@@ -87,52 +88,58 @@ async function Header() {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const flashMsg = await readFlash();
-  const footLink = "text-muted transition-colors hover:text-ink";
+  const footLink = "transition-colors hover:text-ink";
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable} ${heading.variable} ${deva.variable} h-full`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${deva.variable} h-full`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {WORDMARK.text === BUSINESS.siteName && <script dangerouslySetInnerHTML={{ __html: preloadScript }} />}
+        <HeadScript code={themeScript + preloadScript} />
       </head>
       <body className="flex min-h-full flex-col">
         <a href="#main" className="skip-link">Skip to main content</a>
-        {WORDMARK.text === BUSINESS.siteName && <Preloader />}
+        <Preloader />
         <Header />
         {flashMsg && <Toast key={flashMsg.id} flash={flashMsg} />}
         <main id="main" tabIndex={-1} className="flex-1 outline-none">{children}</main>
-        <footer className="mt-24 border-t border-line text-muted">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-10 pt-16 sm:grid-cols-[1.4fr_1fr_1fr] sm:px-6">
+        <footer className="mt-20 border-t border-line bg-raised text-sm text-muted">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
             <div>
-              <p className="max-w-sm text-ink">A noticeboard for second-hand bikes and scooters in Nepal. We don&apos;t sell or inspect bikes, and we aren&apos;t part of any deal.</p>
-              <p className="mt-4 max-w-sm text-sm">Meet in a public place, check the bluebook and never pay in advance.</p>
+              <Link href="/" className="inline-flex" aria-label={`${BUSINESS.siteName} home`}><Logo size="sm" /></Link>
+              <p className="mt-3 max-w-xs">Second-hand motorcycles and scooters, listed by their owners across Nepal. We don&apos;t sell or inspect bikes and aren&apos;t part of any deal.</p>
               {businessRows().length > 0 && (
-                <ul className="mt-4 space-y-0.5 text-sm">
-                  {businessRows().map(([k, v]) => <li key={k}>{k}: <BusinessValue label={k} value={v} className="text-ink underline underline-offset-4" /></li>)}
+                <ul className="mt-4 space-y-0.5">
+                  {businessRows().map(([k, v]) => <li key={k}>{k}: <BusinessValue label={k} value={v} className="text-ink hover:underline" /></li>)}
                 </ul>
               )}
             </div>
-            <nav aria-label="Explore" className="flex flex-col items-start gap-2.5 text-sm">
-              <Link href="/listings" className={footLink}>Browse bikes</Link>
-              <Link href="/sell" className={footLink}>Sell a bike</Link>
-              <Link href="/contact" className={footLink}>Contact and business details</Link>
+            <nav aria-label="Buy" className="flex flex-col items-start gap-2">
+              <h2 className="mb-1 text-sm font-semibold text-ink">Buy</h2>
+              <Link href="/listings?type=MOTORCYCLE" className={footLink}>Motorcycles</Link>
+              <Link href="/listings?type=SCOOTER" className={footLink}>Scooters</Link>
+              <Link href="/listings?budget=under-1l" className={footLink}>Under Rs 1 lakh</Link>
+              <Link href="/compare" className={footLink}>Compare bikes</Link>
             </nav>
-            <nav aria-label="Legal" className="flex flex-col items-start gap-2.5 text-sm">
-              <Link href="/privacy" className={footLink}>Privacy policy</Link>
-              <Link href="/terms" className={footLink}>Terms and conditions</Link>
-              <Link href="/refunds" className={footLink}>Refund policy</Link>
-              <Link href="/cookies" className={footLink}>Cookie policy</Link>
+            <nav aria-label="Sell" className="flex flex-col items-start gap-2">
+              <h2 className="mb-1 text-sm font-semibold text-ink">Sell</h2>
+              <Link href="/sell" className={footLink}>Post an ad</Link>
+              <Link href="/my" className={footLink}>My ads</Link>
+              <Link href="/contact" className={footLink}>Contact us</Link>
+            </nav>
+            <nav aria-label="Legal" className="flex flex-col items-start gap-2">
+              <h2 className="mb-1 text-sm font-semibold text-ink">Policies</h2>
+              <Link href="/privacy" className={footLink}>Privacy</Link>
+              <Link href="/terms" className={footLink}>Terms</Link>
+              <Link href="/refunds" className={footLink}>Refunds</Link>
+              <Link href="/cookies" className={footLink}>Cookies</Link>
               <CookieSettingsButton className={footLink}>Cookie settings</CookieSettingsButton>
             </nav>
           </div>
-          {/* the name returns at full width to close the page */}
-          <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 overflow-hidden px-4 pb-6 sm:px-6">
-            {WORDMARK.text === BUSINESS.siteName
-              ? <FooterWordmark className="h-auto w-[78%] text-ink sm:w-[70%]" />
-              : <p aria-hidden className="font-logo text-[26vw] leading-[0.8] tracking-[-0.04em] text-ink lg:text-[17rem]">{BUSINESS.siteName}</p>}
-            <p className="shrink-0 pb-2 text-xs">© <CurrentYear /> {BUSINESS.siteName}</p>
+          <div className="border-t border-line">
+            <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-4 py-4 text-xs sm:px-6">
+              <p>© <CurrentYear /> {BUSINESS.siteName}</p>
+              <p>Meet in a public place, check the bluebook, never pay in advance.</p>
+            </div>
           </div>
         </footer>
-        <Reveal />
         <CompareBar />
         {assistantConfigured() && <Assistant />}
         <CookieConsent />

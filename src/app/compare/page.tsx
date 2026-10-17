@@ -24,7 +24,7 @@ export default async function Compare({ searchParams }: PageProps<"/compare">) {
       <PageHero title="Compare bikes" subtitle="Side by side. The best value in each row is highlighted." />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         {items.length < 2 ? (
-          <p className="rounded-xl bg-surface p-10 text-center text-muted">
+          <p className="rounded-lg bg-surface p-10 text-center text-muted">
             Pick at least two bikes to compare. Tap “+ Compare” on any listing, then come back here.{" "}
             <Link href="/listings" className="link">Browse bikes</Link>
           </p>
@@ -37,7 +37,7 @@ export default async function Compare({ searchParams }: PageProps<"/compare">) {
                   {items.map((l) => (
                     <th key={l.id} scope="col" className="p-2 align-top font-normal sm:p-3">
                       <Link href={`/listings/${l.id}`} className="group block">
-                        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-card"><Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}`} sizes="(min-width: 1024px) 300px, 50vw" /></div>
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-card"><Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}`} sizes="(min-width: 1024px) 300px, 50vw" /></div>
                         <div className="mt-2 font-semibold leading-snug group-hover:underline">{l.brand} {l.model}</div>
                       </Link>
                       {ratings.get(l.sellerId) && <Stars avg={ratings.get(l.sellerId)!.avg} count={ratings.get(l.sellerId)!.count} className="text-sm" />}

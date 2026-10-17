@@ -34,21 +34,21 @@ export function HeroSearch({ listed }: { listed: Listed[] }) {
     <form
       action="/listings"
       onSubmit={(e) => { for (const el of e.currentTarget.querySelectorAll<HTMLInputElement | HTMLSelectElement>("select, input:checked")) if (!el.value) el.disabled = true; }}
-      className="rounded-2xl bg-surface p-4 shadow-pop sm:p-5"
+      className="rounded-lg border border-line bg-wash p-3 sm:p-4"
     >
       <fieldset>
         <legend className="sr-only">Type of bike</legend>
-        <div className="grid grid-cols-3 gap-1 rounded-xl bg-card p-1">
+        <div className="inline-grid grid-cols-3 gap-1 rounded-md bg-card p-1 max-sm:w-full">
           {TYPES.map(([value, label]) => (
             <label key={label} className="cursor-pointer">
               <input type="radio" name="type" value={value} checked={type === value} onChange={() => pickType(value)} className="peer sr-only" />
-              <span className="flex min-h-10 items-center justify-center rounded-lg px-2 text-sm font-medium text-muted transition-colors peer-checked:bg-canvas peer-checked:text-ink peer-checked:shadow-sm peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">{label}</span>
+              <span className="flex min-h-9 items-center justify-center rounded px-4 text-sm font-medium text-muted transition-colors peer-checked:bg-raised peer-checked:text-ink peer-checked:shadow-sm peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink">{label}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
         <div>
           <label htmlFor="hs-brand" className="label">Brand</label>
           <select id="hs-brand" name="brand" value={brand} onChange={(e) => { setBrand(e.target.value); setModel(""); }} className="input">
@@ -83,8 +83,8 @@ export function HeroSearch({ listed }: { listed: Listed[] }) {
             {BUDGETS.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
           </select>
         </div>
+        <button className="btn-primary w-full sm:col-span-2 lg:col-span-1 lg:w-auto lg:px-7">Search {type === "SCOOTER" ? "scooters" : type === "MOTORCYCLE" ? "motorcycles" : "bikes"}</button>
       </div>
-      <button className="btn-primary mt-4 w-full">Search {type === "SCOOTER" ? "scooters" : type === "MOTORCYCLE" ? "motorcycles" : "bikes"}</button>
     </form>
   );
 }

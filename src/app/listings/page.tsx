@@ -46,18 +46,18 @@ export default async function Browse({ searchParams }: PageProps<"/listings">) {
         {f.page === 1 && featured.length > 0 && (
           <div className="mb-10" aria-label="Featured bikes">
             <h2 className="mb-4 text-xl">Featured</h2>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 xl:grid-cols-3">
-              {featured.map((l, i) => <ListingCard key={l.id} listing={l} compare priority={i < 3} index={i} />)}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+              {featured.map((l, i) => <ListingCard key={l.id} listing={l} compare priority={i < 3} />)}
             </div>
           </div>
         )}
         {items.length === 0 && featured.length === 0 ? (
-          <div className="rounded-xl bg-surface p-10 text-center text-muted">
+          <div className="rounded-lg bg-surface p-10 text-center text-muted">
             No bikes match these filters. Try widening your search.
           </div>
         ) : items.length > 0 && (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-8 xl:grid-cols-3">
-            {items.map((l, i) => <ListingCard key={l.id} listing={l} compare priority={featured.length === 0 && f.page === 1 && i < 3} index={i % 3} />)}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+            {items.map((l, i) => <ListingCard key={l.id} listing={l} compare priority={featured.length === 0 && f.page === 1 && i < 3} />)}
           </div>
         )}
 

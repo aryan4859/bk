@@ -1,7 +1,7 @@
 // Single source of truth for who runs the site. Fill in the empty fields; anything left empty is
 // not shown publicly, so nothing is invented. Legal pages and the footer read from here.
 export const BUSINESS = {
-  siteName: "Sawari",
+  siteName: "Seto Durbar",
   legalName: "", // registered name of the person or company operating the site
   registrationNo: "", // company / PAN / VAT registration number, if any
   address: "", // postal address

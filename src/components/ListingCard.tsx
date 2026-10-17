@@ -17,28 +17,30 @@ type Props = {
   compare?: boolean;
   /** preload the photo (use for the first row, which is above the fold) */
   priority?: boolean;
-  /** position in its grid, for the staggered entrance */
-  index?: number;
 };
 
-export function ListingCard({ listing: l, compare = false, priority = false, index = 0 }: Props) {
+export function ListingCard({ listing: l, compare = false, priority = false }: Props) {
   const featured = isFeaturedNow(l.featuredUntil) && l.status === "ACTIVE";
   return (
-    <div className="relative" data-reveal style={{ "--i": index % 4 } as React.CSSProperties}>
-      <Link href={`/listings/${l.id}`} className="group block">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-card">
-          <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]">
-            <Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}${l.images[0] ? "" : " (no photo)"}`} priority={priority} />
-          </div>
+    <div className="relative">
+      <Link href={`/listings/${l.id}`} className="group flex h-full flex-col overflow-hidden rounded-lg border border-line bg-raised transition-colors hover:border-field">
+        <div className="relative aspect-[4/3] bg-card">
+          <Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}${l.images[0] ? "" : " (no photo)"}`} priority={priority} />
           {l.status === "SOLD" && <Chip tone="dark" className="absolute left-2 top-2 z-10">Sold</Chip>}
           {featured && <Chip tone="featured" className="absolute left-2 top-2 z-10">Featured</Chip>}
         </div>
-        <div className="mt-3">
-          <div className="truncate font-medium text-ink underline-offset-4 group-hover:underline">{l.brand} {l.model}</div>
-          <div className="mt-0.5 font-semibold tabular-nums text-ink">{formatNpr(l.priceNpr)}</div>
-          <div className="mt-1 text-sm text-muted">{l.year}, {formatKm(l.kmDriven)}</div>
-          <div className="text-sm text-muted">{l.city}{l.negotiable ? ", negotiable" : ""}</div>
-          {l.rating && <Stars avg={l.rating.avg} count={l.rating.count} className="mt-0.5 text-sm" />}
+        <div className="flex flex-1 flex-col p-3">
+          <div className="truncate text-[15px] font-medium text-ink group-hover:text-brand">{l.year} {l.brand} {l.model}</div>
+          <div className="mt-1 text-lg font-bold tabular-nums text-ink">
+            {formatNpr(l.priceNpr)}
+            {l.negotiable && <span className="ml-1.5 text-xs font-normal text-muted">negotiable</span>}
+          </div>
+          <div className="mt-auto pt-2 text-[13px] text-muted">
+            <span className="tabular-nums">{formatKm(l.kmDriven)}</span>
+            <span aria-hidden className="mx-1.5 text-muted-soft">|</span>
+            {l.city}
+          </div>
+          {l.rating && <Stars avg={l.rating.avg} count={l.rating.count} className="mt-1 text-[13px]" />}
         </div>
       </Link>
       {compare && <CompareToggle id={l.id} label={`${l.brand} ${l.model}`} className="absolute right-2 top-2 z-20" />}

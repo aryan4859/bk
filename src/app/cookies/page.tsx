@@ -9,7 +9,7 @@ export default function Cookies() {
   return (
     <LegalPage title="Cookie policy" intro="Which cookies we set, and what each one is for.">
       <h2>What we use</h2>
-      <div className="mt-4 overflow-x-auto rounded-xl bg-surface">
+      <div className="mt-4 overflow-x-auto rounded-lg bg-surface">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Cookies set by {BUSINESS.siteName}</caption>
           <thead className="bg-surface-sunk"><tr><th scope="col" className="p-3">Name</th><th scope="col" className="p-3">Purpose</th><th scope="col" className="p-3">Type</th><th scope="col" className="p-3">Lasts</th></tr></thead>

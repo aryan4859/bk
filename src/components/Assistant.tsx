@@ -19,7 +19,7 @@ const load = (): Turn[] => {
   try { const v = JSON.parse(sessionStorage.getItem(KEY) ?? "[]"); return Array.isArray(v) ? v.slice(-30) : []; } catch { return []; }
 };
 
-/** The "Ask Sawari" chat: a floating button that opens a panel (a full-screen sheet on phones). */
+/** The "Ask Seto Durbar" chat: a floating button that opens a panel (a full-screen sheet on phones). */
 export function Assistant() {
   const [open, setOpen] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -86,7 +86,7 @@ export function Assistant() {
         onClick={() => { dismissGreeting(); setOpen((o) => !o); }}
         aria-expanded={open}
         aria-controls="assistant-panel"
-        aria-label={open ? "Close Ask Sawari" : "Ask Sawari"}
+        aria-label={open ? "Close Ask Seto Durbar" : "Ask Seto Durbar"}
         title={open ? undefined : "Ask Bike Dai"}
         className={`chat-head fixed bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-4 z-40 inline-flex size-14 items-center justify-center rounded-full bg-ink text-canvas shadow-pop ring-4 ring-canvas transition-transform duration-150 hover:scale-105 active:scale-95 sm:right-5 ${open ? "max-sm:hidden" : ""}`}
       >
@@ -100,7 +100,7 @@ export function Assistant() {
           role="status"
           className="greeting-pop fixed bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-[5.25rem] z-40 flex h-14 items-center sm:right-[5.5rem]"
         >
-          <div className="relative flex max-w-[min(18rem,calc(100vw-6.5rem))] items-center rounded-2xl bg-surface py-2 pl-3.5 pr-9 shadow-pop">
+          <div className="relative flex max-w-[min(18rem,calc(100vw-6.5rem))] items-center rounded-lg bg-surface py-2 pl-3.5 pr-9 shadow-pop">
             {/* tail pointing right, at the chat head */}
             <span aria-hidden className="absolute -right-1.5 top-1/2 size-3 -translate-y-1/2 rotate-45 bg-surface" />
             <button type="button" onClick={() => { dismissGreeting(); setOpen(true); }} lang="ne" className="relative block text-left">
@@ -121,12 +121,12 @@ export function Assistant() {
         <section
           id="assistant-panel"
           role="dialog"
-          aria-label="Sawari assistant"
-          className="fixed inset-0 z-50 flex flex-col bg-canvas sm:inset-auto sm:bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+4.5rem)] sm:right-5 sm:h-[min(640px,calc(100vh-8rem))] sm:w-[400px] sm:rounded-2xl sm:shadow-pop"
+          aria-label="Seto Durbar assistant"
+          className="fixed inset-0 z-50 flex flex-col bg-canvas sm:inset-auto sm:bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+4.5rem)] sm:right-5 sm:h-[min(640px,calc(100vh-8rem))] sm:w-[400px] sm:rounded-lg sm:shadow-pop"
         >
           <header className="flex items-center justify-between gap-3 bg-surface px-4 py-3 sm:rounded-t-2xl">
             <div>
-              <h2 className="text-[24px] leading-none">Ask Sawari</h2>
+              <h2 className="text-[24px] leading-none">Ask Seto Durbar</h2>
               <p className="mt-1 text-xs text-muted">Finds bikes for sale and explains how the site works.</p>
             </div>
             <button type="button" onClick={() => { setOpen(false); button.current?.focus(); }} aria-label="Close assistant" className="inline-flex size-10 items-center justify-center rounded-full text-ink hover:bg-cream">
@@ -147,14 +147,14 @@ export function Assistant() {
             )}
             {turns.map((t, i) => (
               <div key={i} className={t.role === "user" ? "flex justify-end" : ""}>
-                <div className={`max-w-[88%] whitespace-pre-wrap break-words rounded-xl px-3.5 py-2.5 text-[15px] ${t.role === "user" ? "bg-dark text-on-dark" : t.error ? "bg-error/10 text-error" : "bg-surface text-ink"}`}>
+                <div className={`max-w-[88%] whitespace-pre-wrap break-words rounded-lg px-3.5 py-2.5 text-[15px] ${t.role === "user" ? "bg-dark text-on-dark" : t.error ? "bg-error/10 text-error" : "bg-surface text-ink"}`}>
                   {t.content}
                 </div>
                 {t.listings && t.listings.length > 0 && (
                   <ul aria-label="Matching bikes" className="mt-2 space-y-2">
                     {t.listings.map((l) => (
                       <li key={l.id}>
-                        <Link href={`/listings/${l.id}`} className="flex gap-3 rounded-xl bg-surface p-2 transition-colors hover:bg-cream">
+                        <Link href={`/listings/${l.id}`} className="flex gap-3 rounded-lg bg-surface p-2 transition-colors hover:bg-cream">
                           <span className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-cream">
                             {l.image && <SafeImage src={l.image} alt="" fill sizes="80px" className="object-cover" />}
                           </span>

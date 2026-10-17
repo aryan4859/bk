@@ -1,69 +1,47 @@
 import Link from "next/link";
 import type { Listed } from "@/lib/catalog";
-import { HeroScene, type HeroCard } from "./HeroScene";
 import { HeroSearch } from "./HeroSearch";
 
 /**
- * The home hero: a plain headline with one hand-drawn underline, the search, and the hills with the newest
- * bikes floating in front. Quiet on purpose: the bikes are the colour.
+ * The top of the home page: what the site is, the search, and a row of searches people are likely to want,
+ * built from what is actually listed right now.
  */
-export function Hero({ count, cities, cards, listed }: {
+export function Hero({ count, cities, listed }: {
   count: number;
-  cities: number;
-  cards: HeroCard[];
+  cities: { city: string; _count: { city: number } }[];
   listed: Listed[];
 }) {
+  const topModels = [...listed].sort((a, b) => b.n - a.n).slice(0, 4);
+  const topCity = cities[0]?.city;
+  const popular = [
+    ...topModels.map((m) => ({ href: `/listings?brand=${encodeURIComponent(m.brand)}&model=${encodeURIComponent(m.model)}`, label: `${m.brand} ${m.model}` })),
+    ...(topCity ? [{ href: `/listings?type=SCOOTER&city=${encodeURIComponent(topCity)}`, label: `Scooters in ${topCity}` }] : []),
+    { href: "/listings?budget=under-1l", label: "Under Rs 1 lakh" },
+  ];
+
   return (
-    <section className="overflow-hidden">
-      <div className="mx-auto grid max-w-6xl gap-x-14 gap-y-10 px-4 pb-16 pt-10 sm:px-6 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
-        <div>
-          <p className="text-sm text-muted">
-            {count} bikes for sale in {cities} {cities === 1 ? "city" : "cities"}
-          </p>
-          <h1 className="mt-4 text-[44px] leading-[1.02] sm:text-[60px] lg:text-[66px]">
-            Find your next bike,{" "}
-            <span className="relative inline-block whitespace-nowrap">
-              <em className="font-display italic">straight</em>
-              <Scribble />
-            </span>{" "}
-            from the owner.
-          </h1>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-body">
-            Used motorcycles and scooters, posted by the people who ride them. Message the seller, meet up, check
-            the bluebook, then decide.
-          </p>
-        </div>
+    <section className="border-b border-line bg-raised">
+      <div className="mx-auto max-w-6xl px-4 pb-8 pt-8 sm:px-6 sm:pt-10">
+        <h1 className="text-[28px] sm:text-[34px]">Used bikes and scooters for sale in Nepal</h1>
+        <p className="mt-1.5 text-muted">
+          {count.toLocaleString("en-IN")} ads from owners in {cities.length} {cities.length === 1 ? "city" : "cities"}. Message the seller directly, no middleman.
+        </p>
 
-        {cards.length > 0 && (
-          <div role="group" aria-label="Recently listed bikes" className="order-last lg:order-none lg:row-span-2">
-            <HeroScene cards={cards} />
-          </div>
-        )}
-
-        <div>
+        <div className="mt-6">
           <HeroSearch listed={listed} />
-          <p className="mt-4 text-sm text-muted">
-            Just looking? Browse all <Link href="/listings?type=MOTORCYCLE" className="link">motorcycles</Link> or{" "}
-            <Link href="/listings?type=SCOOTER" className="link">scooters</Link>.
-          </p>
         </div>
+
+        {popular.length > 0 && (
+          <nav aria-label="Popular searches" className="mt-5 flex flex-wrap items-center gap-2 text-sm">
+            <span className="mr-1 text-muted">Popular right now:</span>
+            {popular.map((p) => (
+              <Link key={p.href} href={p.href} className="rounded-full border border-line bg-wash px-3 py-1 text-body transition-colors hover:border-field hover:text-ink">
+                {p.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
     </section>
-  );
-}
-
-/** A pen stroke under a word: slightly uneven on purpose, drawn once when the page opens. */
-function Scribble() {
-  return (
-    <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" className="scribble absolute -bottom-2 left-[-4%] h-[0.32em] w-[108%] overflow-visible text-accent">
-      <path
-        d="M3 13 C 34 6, 70 4, 104 7 S 168 12, 197 5"
-        pathLength={1}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

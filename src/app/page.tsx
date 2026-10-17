@@ -4,17 +4,18 @@ import { ListingCard } from "@/components/ListingCard";
 import { BrandGrid } from "@/components/BrandGrid";
 import { BudgetBands } from "@/components/BudgetBands";
 import { Hero } from "@/components/Hero";
+import { Icon } from "@/components/Icon";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import type { Listed } from "@/lib/catalog";
 import { BRANDS, BUDGETS } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { FEATURED_MAX, cardSelect, sellerRatings } from "@/lib/queries";
 
-// written as a note from us, not a feature grid
-const STEPS = [
-  ["You post the bike.", "A few photos, the price, and an honest word about its condition. Scratches included."],
-  ["We read every ad.", "Someone on our team checks each one before it goes up. We can't see the bike, though, so look it over and check the bluebook yourself."],
-  ["You meet the buyer.", "They message or call you. You agree on a price over tea, and do the transfer papers together."],
+const SAFETY = [
+  "See the bike in daylight, somewhere public.",
+  "Match the chassis and engine numbers to the bluebook.",
+  "Take it for a ride before you agree on a price.",
+  "Never send an advance to hold a bike.",
 ] as const;
 
 // Totals only need to be roughly right, so they are cached for a minute instead of hitting the
@@ -49,100 +50,79 @@ export default async function Home() {
   ]);
   const ratings = await sellerRatings([...featured, ...latest].map((l) => l.sellerId));
   const withRating = <T extends { sellerId: string }>(l: T) => ({ ...l, rating: ratings.get(l.sellerId) ?? null });
-  // the floating bikes in the hero: featured first, then the newest, only ones with a photo
-  const heroCards = [...featured, ...latest.filter((l) => !featured.some((f) => f.id === l.id))]
-    .filter((l) => l.images[0])
-    .slice(0, 3)
-    .map((l) => ({ id: l.id, title: `${l.year} ${l.brand} ${l.model}`, priceNpr: l.priceNpr, url: l.images[0].url }));
-
   return (
     <>
-      <Hero count={count} cities={cities.length} cards={heroCards} listed={listed} />
+      <Hero count={count} cities={cities} listed={listed} />
 
       {featured.length > 0 && (
-        <section className="border-t border-line py-16 sm:py-20" aria-labelledby="featured">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 id="featured" data-reveal className="text-2xl sm:text-3xl">Featured</h2>
-            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
-              {featured.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={i < 4} index={i} />)}
-            </div>
+        <Section id="featured" title="Featured ads" more={{ href: "/listings", label: "View all" }}>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {featured.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={i < 4} />)}
           </div>
-        </section>
+        </Section>
       )}
 
-      <section className="border-t border-line">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="flex items-end justify-between gap-4">
-          <h2 data-reveal className="text-2xl sm:text-3xl">Just listed</h2>
-          <Link href="/listings" className="text-sm text-muted transition-colors hover:text-ink">See all {count} →</Link>
-        </div>
+      <Section id="latest" title="Recently added" more={{ href: "/listings", label: `View all ${count.toLocaleString("en-IN")}` }}>
         {latest.length === 0 ? (
-          <p className="mt-8 rounded-xl bg-surface p-10 text-center text-muted">
+          <p className="rounded-lg border border-line bg-raised p-10 text-center text-muted">
             Nothing listed yet. <Link href="/sell" className="link">Post the first bike.</Link>
           </p>
         ) : (
-          <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
-            {latest.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={featured.length === 0 && i < 4} index={i} />)}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {latest.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={featured.length === 0 && i < 4} />)}
           </div>
         )}
-        </div>
-      </section>
+      </Section>
 
       <BudgetBands bands={budgets} />
 
-      <section className="border-t border-line py-16 sm:py-20" aria-labelledby="brands">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="brands" data-reveal className="text-2xl sm:text-3xl">Popular brands</h2>
-            <Link href="/listings" className="text-sm text-muted transition-colors hover:text-ink">See all bikes →</Link>
-          </div>
-          <BrandGrid brands={BRANDS.filter((b) => b !== "Other")} counts={brandCounts} />
+      <Section id="brands" title="Popular brands" more={{ href: "/listings", label: "All bikes" }}>
+        <BrandGrid brands={BRANDS.filter((b) => b !== "Other")} counts={brandCounts} />
+      </Section>
 
-          {cities.length > 0 && (
-            <div className="mt-16">
-              <h2 data-reveal className="text-2xl sm:text-3xl">Cities</h2>
-              <ul data-reveal style={{ "--i": 1 } as React.CSSProperties} className="mt-6 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
-                {cities.map((c) => (
-                  <li key={c.city}>
-                    <Link href={`/listings?city=${encodeURIComponent(c.city)}`} className="inline-block py-1.5 text-ink underline-offset-4 hover:underline">
-                      {c.city} <span className="text-muted">({c._count.city})</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </section>
+      {cities.length > 0 && (
+        <Section id="cities" title="Bikes by city">
+          <ul className="flex flex-wrap gap-2">
+            {cities.map((c) => (
+              <li key={c.city}>
+                <Link href={`/listings?city=${encodeURIComponent(c.city)}`} className="inline-flex items-center gap-1.5 rounded-md border border-line bg-raised px-3 py-2 text-sm text-ink transition-colors hover:border-field">
+                  {c.city} <span className="text-muted tabular-nums">{c._count.city}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
-      <section className="border-t border-line py-16 sm:py-20" aria-labelledby="how">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
-            <div data-reveal>
-              <h2 id="how" className="text-2xl sm:text-3xl">How it works</h2>
-              <p className="mt-3 max-w-xs text-muted">We&apos;re a noticeboard, not a dealer. The deal is between you and the other rider.</p>
-            </div>
-            <ol className="grid gap-8 sm:grid-cols-3 sm:gap-6">
-              {STEPS.map(([title, body], i) => (
-                <li key={title} data-reveal style={{ "--i": i + 1 } as React.CSSProperties} className="border-t border-ink pt-4">
-                  <h3 className="text-xl">{title}</h3>
-                  <p className="mt-2 text-body">{body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 sm:px-6" aria-labelledby="sell-cta">
-        <div data-reveal className="flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-surface px-6 py-10 sm:px-10">
+      <div className="mx-auto mt-12 grid max-w-6xl gap-4 px-4 sm:px-6 lg:grid-cols-[3fr_2fr]">
+        <section aria-labelledby="sell-cta" className="flex flex-col justify-between gap-6 rounded-lg bg-dark p-6 text-on-dark sm:flex-row sm:items-center sm:p-8">
           <div>
-            <h2 id="sell-cta" className="text-2xl sm:text-3xl">Bike sitting in the gully?</h2>
-            <p className="mt-2 max-w-md text-body">Someone in your city is probably looking for it. Posting is free, takes about five minutes, and buyers message you directly.</p>
+            <h2 id="sell-cta" className="text-xl text-on-dark sm:text-2xl">Selling your bike?</h2>
+            <p className="mt-1.5 max-w-md text-on-dark-soft">Posting is free and takes about five minutes. Buyers call or message you directly; we never take a cut.</p>
           </div>
-          <ButtonLink href="/sell">Sell a bike</ButtonLink>
-        </div>
-      </section>
+          <ButtonLink href="/sell" className="shrink-0">Post a free ad</ButtonLink>
+        </section>
+        <section aria-labelledby="safety" className="rounded-lg border border-line bg-raised p-6">
+          <h2 id="safety" className="text-base">Before you pay</h2>
+          <ul className="mt-3 space-y-2 text-sm text-body">
+            {SAFETY.map((t) => (
+              <li key={t} className="flex gap-2"><Icon name="check" className="mt-0.5 size-4 shrink-0 text-ok" />{t}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </>
+  );
+}
+
+function Section({ id, title, more, children }: { id: string; title: string; more?: { href: string; label: string }; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-12">
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <h2 id={id} className="text-xl sm:text-2xl">{title}</h2>
+        {more && <Link href={more.href} className="shrink-0 text-sm font-medium text-brand hover:underline">{more.label} ›</Link>}
+      </div>
+      {children}
+    </section>
   );
 }

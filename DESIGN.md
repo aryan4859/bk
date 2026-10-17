@@ -1,39 +1,45 @@
-# Sawari design
+# Seto Durbar design
 
-Warm and plain-spoken, like a well-kept noticeboard rather than a startup template. Paper-coloured page,
-ink text, one red, a serif with some character, and copy that sounds like a person. Tokens live in
-`src/app/globals.css`; components only use the token classes, never raw hex.
+A working classifieds site in the mould of the Nepali car and bike portals people already use: search first,
+lots of ads on screen, plain labels. It should look like something a small team built and keeps tidy, not a
+showcase. Tokens live in `src/app/globals.css`; components only use the token classes, never raw hex.
 
 ## Colour
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| canvas | #f7f4ee | #171513 | the page: paper, never pure white or blue-black |
-| raised | #fffdf9 | #1f1c19 | cards and panels, a shade lighter than the page (`bg-surface`) |
-| ink | #1d1b18 | #f3efe7 | headings, primary text, links |
-| body / muted | #3b3833 / #69635a | #d9d3c8 / #a69f93 | running text / secondary text (AA on canvas and card) |
-| line | #e3ddd2 | #332f29 | hairlines: card edges, dividers |
-| wash / card / cream | #f1ece3 / #ebe5da / #e2dacb | #1d1a17 / #26231f / #2f2b26 | photo wells, selected tabs, hover fills |
-| accent | #b8322a | #e0645a | rhododendron red: the main button, badges, the hand-drawn marks |
+| canvas | #f3f4f6 | #111317 | the page, light grey so white cards stand out |
+| raised | #ffffff | #1a1d22 | cards, panels, the header and footer |
+| ink | #16191f | #eef0f3 | headings, prices, primary text |
+| body / muted | #343a44 / #5f6672 | #d3d7dd / #9da4af | running text / secondary text (AA on page and card) |
+| line | #dfe2e7 | #2c3139 | card borders, dividers |
+| wash / card / cream | #f7f8fa / #e9ebef / #e2e5ea | #16191d / #23272e / #2b3038 | search panel, photo wells, selected tabs |
+| brand | #1a56b8 | #7fb0ff | links and "View all" |
+| accent | #c8222c | #ef5a5f | the main button, Featured badge, logo mark |
 
-Red is scarce on purpose: one button per view, the featured badge, the underline and the sun in the hero.
+Red is for the one action that matters on a screen (Search, Post an ad, Sell) and the Featured badge.
 
 ## Type
-- Fraunces (soft, medium weight) for headings; its italic for the odd emphasised word.
-- Inter for everything else.
-- Cormorant Garamond only for the "Sawari" wordmark (header logo, preloader and footer outlines are cut from it).
+- Inter for everything. Headings are semibold, not large: page titles 26-34px, section titles 20-24px.
+- Prices are bold and the biggest thing on a card.
+- Noto Serif Devanagari only for the assistant's Nepali name.
+
+## Layout
+- Header: logo mark and name, Motorcycles / Scooters / Compare, then log in and the red Sell button.
+- Home: heading and search in a white band, popular searches from live ads, then Featured, Recently added,
+  budget, brands, cities, and a sell banner beside a "Before you pay" checklist.
+- Section header: title on the left, a blue "View all ›" link on the right, content 16px below.
+- Footer: four columns of links and a copyright row.
 
 ## Voice
-Write like someone who sells bikes in Kathmandu, not a landing page. Short, specific, a bit warm:
-"Bike sitting in the gully?", "You agree on a price over tea". Say what we don't do (we don't inspect bikes).
-No hype words, no "seamless", no "unlock".
+Plain and specific, like a listing site, not a landing page: "Selling your bike?", "Before you pay",
+"Never send an advance to hold a bike". Say what we don't do (we don't inspect bikes). No hype words.
 
 ## Things we don't do
-These read as generated: neon on black, glow blobs, dot grids, cycling headline words, sparkle tickers,
-pulsing "live" pills, giant outlined marquee text, "01 / 02 / 03" step numbers. Keep it to the content.
+Anything that reads as generated: preloaders, drawn or animated wordmarks, giant footer text, fade-up on scroll,
+3D tilt or parallax, floating cards, hand-drawn underlines, decorative serif italics, glow, gradients,
+"01 / 02 / 03" step rows. Motion is limited to hover colour changes and things that open (menus, dialogs).
 
 ## Surfaces and shape
-- Depth from tone (cards lighter than the page) plus a hairline, not shadow. `shadow-pop` only for things
-  that float: the hero search, menus, toasts, dialogs.
-- Sections are separated by a top hairline and 64-80px of padding.
-- Radius: 8px buttons and inputs, 12px cards, 16px large panels.
-- One hand-made mark per page at most: the pen-stroke underline in the hero headline.
+- Cards: white, 1px `line` border that darkens on hover. No shadow.
+- `shadow-pop` only for things that float: menus, toasts, dialogs.
+- Radius: 6px buttons and inputs, 8px cards and panels, pills for search suggestions.

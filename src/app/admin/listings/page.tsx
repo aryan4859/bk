@@ -56,11 +56,11 @@ export default async function AdminListings({ searchParams }: PageProps<"/admin/
       </div>
 
       {items.length === 0 ? (
-        <p className="mt-6 rounded-xl bg-surface p-10 text-center text-muted">No listings found.</p>
+        <p className="mt-6 rounded-lg bg-surface p-10 text-center text-muted">No listings found.</p>
       ) : (
         <ul className="mt-5 space-y-2">
           {items.map((l) => (
-            <li key={l.id} className="flex gap-3 rounded-xl bg-surface p-3 sm:gap-4 sm:p-4">
+            <li key={l.id} className="flex gap-3 rounded-lg bg-surface p-3 sm:gap-4 sm:p-4">
               <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded bg-surface-sunk sm:h-16 sm:w-24"><Photo src={l.images[0]?.url} alt="" /></div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

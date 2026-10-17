@@ -26,8 +26,19 @@ test.describe("public pages", () => {
 
   test("home shows the hero search and live count", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your next bike");
-    await expect(page.getByText(/\d+ bikes for sale in \d+ cit(y|ies)/)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Used bikes and scooters for sale in Nepal");
+    await expect(page.getByText(/[\d,]+ ads from owners in \d+ cit(y|ies)/)).toBeVisible();
+  });
+
+  test("home suggests popular searches built from live ads", async ({ page }) => {
+    await page.goto("/");
+    const popular = page.getByRole("navigation", { name: "Popular searches" });
+    await expect(popular.getByRole("link", { name: "Under Rs 1 lakh" })).toHaveAttribute("href", "/listings?budget=under-1l");
+    // the most-listed models come first, each opening that model's ads
+    const model = popular.locator("a[href*='model=']").first();
+    await expect(model).toBeVisible();
+    await model.click();
+    await expect(page).toHaveURL(/\/listings\?brand=.+&model=.+/);
   });
 
   test("home search panel: type, brand, model and budget lead to filtered results", async ({ page }) => {

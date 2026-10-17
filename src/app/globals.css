@@ -1,71 +1,71 @@
 @import "tailwindcss";
 
 /* ============ tokens ============ */
-/* Warm and plain-spoken (see DESIGN.md): paper-coloured page, ink text, cards a shade lighter than the page,
-   and one colour, rhododendron red (Nepal's national flower), kept for the main button and small marks.
-   Every text pairing is WCAG AA or better in both themes. */
+/* A working classifieds site, not a showcase (see DESIGN.md): light grey page, white cards with a plain border,
+   near-black text, blue links, and one red for the main button and badges. Every text pairing is WCAG AA or
+   better in both themes. */
 @theme {
-  --color-ink: #1d1b18;
-  --color-body: #3b3833;
-  --color-muted: #69635a;        /* 5.4:1 on paper, 4.9:1 on card */
-  --color-muted-soft: #a39b8d;   /* decoration only */
-  --color-line: #e3ddd2;         /* hairline: card edges, dividers */
-  --color-field: #948c7e;        /* form-field edge, 3.1:1 */
-  --color-canvas: #f7f4ee;       /* the page: paper, not white */
-  --color-raised: #fffdf9;       /* cards and panels sit a shade lighter than the page */
-  --color-wash: #f1ece3;
-  --color-card: #ebe5da;         /* photo wells, placeholders */
-  --color-cream: #e2dacb;        /* selected tabs, hover fills */
-  --color-dark: #1d1b18;         /* inverse surface: compare bar, chips, own chat bubbles */
-  --color-dark-2: #34312c;
-  --color-on-dark: #f7f4ee;
-  --color-on-dark-soft: #b3ab9e;
-  --color-accent: #b8322a;       /* rhododendron: the main button, badges, the hand-drawn marks */
-  --color-accent-dark: #962820;
-  --color-brand: #1d1b18;        /* inline links: ink, underlined */
-  --color-brand-dark: #b8322a;
+  --color-ink: #16191f;
+  --color-body: #343a44;
+  --color-muted: #5f6672;        /* 5.6:1 on the page, 6:1 on white */
+  --color-muted-soft: #a3a9b3;   /* decoration only */
+  --color-line: #dfe2e7;         /* card edges, dividers */
+  --color-field: #8b929d;        /* form-field edge, 3.1:1 */
+  --color-canvas: #f3f4f6;       /* the page */
+  --color-raised: #ffffff;       /* cards, panels, the header */
+  --color-wash: #f7f8fa;
+  --color-card: #e9ebef;         /* photo wells, placeholders */
+  --color-cream: #e2e5ea;        /* selected tabs, hover fills */
+  --color-dark: #16191f;         /* inverse surface: compare bar, chips, own chat bubbles */
+  --color-dark-2: #2c313a;
+  --color-on-dark: #f3f4f6;
+  --color-on-dark-soft: #a9afb9;
+  --color-accent: #c8222c;       /* the main button, featured badge, logo */
+  --color-accent-dark: #a51b24;
+  --color-brand: #1a56b8;        /* inline links */
+  --color-brand-dark: #13428f;
   --color-error: #b3261e;
   --color-ok: #2f6b3f;
   --color-warn: #8a5a00;
   --color-star: #c07a1a;
-  --color-on-accent: #ffffff;    /* 5.6:1 on the red */
+  --color-on-accent: #ffffff;    /* 5.3:1 on the red */
+  --color-gold: #a5802f;         /* the logo finial; decorative */
   --color-snow: #ffffff;         /* logo plates, white in both themes so dark logos stay visible */
-  --color-on-snow: #1d1b18;
+  --color-on-snow: #16191f;
 
-  --font-display: var(--font-heading), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-logo: var(--font-serif), "EB Garamond", Garamond, "Times New Roman", serif; /* the wordmark only */
   --font-deva: var(--font-devanagari), serif;
 
   /* only for things that truly float: menus, toasts, dialogs */
-  --shadow-pop: 0 1px 2px rgb(60 45 30 / 0.06), 0 12px 32px -14px rgb(60 45 30 / 0.22);
+  --shadow-pop: 0 1px 2px rgb(16 24 40 / 0.06), 0 10px 28px -12px rgb(16 24 40 / 0.25);
 }
 
 /* ============ dark theme ============ */
-/* The same paper and ink at night: warm charcoal, not blue-black. It follows the device setting unless
-   the visitor picks a theme with the header toggle (stored as data-theme on <html>). */
+/* Follows the device setting unless the visitor picks a theme with the header toggle (data-theme on <html>). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-ink: #f3efe7;
-    --color-body: #d9d3c8;
-    --color-muted: #a69f93;
-    --color-muted-soft: #6f685e;
-    --color-line: #332f29;
-    --color-field: #7a7367;
-    --color-canvas: #171513;
-    --color-raised: #1f1c19;
-    --color-wash: #1d1a17;
-    --color-card: #26231f;
-    --color-cream: #2f2b26;
-    --color-dark: #f3efe7;
-    --color-dark-2: #ddd7cc;
-    --color-on-dark: #171513;
-    --color-on-dark-soft: #5c564d;
-    --color-accent: #e0645a;
-    --color-accent-dark: #ea8178;
-    --color-brand: #f3efe7;
-    --color-brand-dark: #e0645a;
-    --color-on-accent: #171513;
+    --color-gold: #e6d3a3;
+    --color-ink: #eef0f3;
+    --color-body: #d3d7dd;
+    --color-muted: #9da4af;
+    --color-muted-soft: #5d636d;
+    --color-line: #2c3139;
+    --color-field: #6f7681;
+    --color-canvas: #111317;
+    --color-raised: #1a1d22;
+    --color-wash: #16191d;
+    --color-card: #23272e;
+    --color-cream: #2b3038;
+    --color-dark: #eef0f3;
+    --color-dark-2: #d3d7dd;
+    --color-on-dark: #111317;
+    --color-on-dark-soft: #5d636d;
+    --color-accent: #ef5a5f;
+    --color-accent-dark: #f37b7f;
+    --color-brand: #7fb0ff;
+    --color-brand-dark: #a6c8ff;
+    --color-on-accent: #111317;
     --color-error: #f08a80;
     --color-ok: #7fc493;
     --color-warn: #e6b45c;
@@ -75,26 +75,27 @@
   }
 }
 :root[data-theme="dark"] {
-  --color-ink: #f3efe7;
-  --color-body: #d9d3c8;
-  --color-muted: #a69f93;
-  --color-muted-soft: #6f685e;
-  --color-line: #332f29;
-  --color-field: #7a7367;
-  --color-canvas: #171513;
-  --color-raised: #1f1c19;
-  --color-wash: #1d1a17;
-  --color-card: #26231f;
-  --color-cream: #2f2b26;
-  --color-dark: #f3efe7;
-  --color-dark-2: #ddd7cc;
-  --color-on-dark: #171513;
-  --color-on-dark-soft: #5c564d;
-  --color-accent: #e0645a;
-  --color-accent-dark: #ea8178;
-  --color-brand: #f3efe7;
-  --color-brand-dark: #e0645a;
-  --color-on-accent: #171513;
+  --color-gold: #e6d3a3;
+  --color-ink: #eef0f3;
+  --color-body: #d3d7dd;
+  --color-muted: #9da4af;
+  --color-muted-soft: #5d636d;
+  --color-line: #2c3139;
+  --color-field: #6f7681;
+  --color-canvas: #111317;
+  --color-raised: #1a1d22;
+  --color-wash: #16191d;
+  --color-card: #23272e;
+  --color-cream: #2b3038;
+  --color-dark: #eef0f3;
+  --color-dark-2: #d3d7dd;
+  --color-on-dark: #111317;
+  --color-on-dark-soft: #5d636d;
+  --color-accent: #ef5a5f;
+  --color-accent-dark: #f37b7f;
+  --color-brand: #7fb0ff;
+  --color-brand-dark: #a6c8ff;
+  --color-on-accent: #111317;
   --color-error: #f08a80;
   --color-ok: #7fc493;
   --color-warn: #e6b45c;
@@ -118,10 +119,9 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 500;
-    font-variation-settings: "SOFT" 50;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
     color: var(--color-ink);
   }
   :focus-visible {
@@ -140,17 +140,17 @@
 
 /* ============ controls ============ */
 @utility input {
-  @apply min-h-10 w-full rounded-lg border border-field bg-canvas px-3.5 py-2 text-base text-ink outline-none transition-[border-color,box-shadow] placeholder:text-muted focus:border-ink focus:ring-[3px] focus:ring-ink/10;
+  @apply min-h-10 w-full rounded-md border border-field bg-raised px-3 py-2 text-base text-ink outline-none transition-[border-color,box-shadow] placeholder:text-muted focus:border-brand focus:ring-[3px] focus:ring-brand/15;
 }
 @utility btn {
-  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-[transform,background-color,color] duration-150 active:scale-[0.97] disabled:opacity-50;
+  @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-100 disabled:opacity-50;
 }
 @utility btn-primary {
   @apply btn bg-accent text-on-accent hover:bg-accent-dark active:bg-accent-dark;
 }
 /* secondary: a hairline outline */
 @utility btn-outline {
-  @apply btn border border-line bg-raised text-ink hover:bg-wash active:bg-card;
+  @apply btn border border-field/60 bg-raised text-ink hover:bg-wash active:bg-card;
 }
 @utility btn-on-dark {
   @apply btn bg-dark-2 text-on-dark active:bg-black;
@@ -160,17 +160,11 @@
 }
 @utility font-display {
   font-family: var(--font-display);
-  font-weight: 500;
-  font-variation-settings: "SOFT" 50;
-  letter-spacing: -0.02em;
-}
-@utility font-logo {
-  font-family: var(--font-logo);
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: 650;
+  letter-spacing: -0.015em;
 }
 @utility link {
-  @apply text-brand underline decoration-1 underline-offset-4 active:text-brand-dark;
+  @apply text-brand hover:underline underline-offset-2 active:text-brand-dark;
 }
 
 /* ============ accessibility ============ */
@@ -186,39 +180,6 @@
 }
 .skip-link:focus { top: 0.75rem; }
 
-/* ============ hero: the hand-drawn underline ============ */
-/* drawn once, like a pen stroke, when the page opens */
-.scribble path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: scribble 900ms cubic-bezier(0.65, 0, 0.35, 1) 400ms forwards; }
-@keyframes scribble { to { stroke-dashoffset: 0; } }
-@media (prefers-reduced-motion: reduce) { .scribble path { stroke-dashoffset: 0; animation: none; } }
-
-/* ============ home hero scene ============ */
-/* A slow bob on the floating bike cards, layered on top of each card's own 3D turn. */
-@keyframes hero-float {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -6px; }
-}
-.hero-float {
-  animation: hero-float 6s ease-in-out infinite;
-  transition: scale 200ms ease;
-}
-.hero-float:hover { scale: 1.04; }
-@media (prefers-reduced-motion: reduce) {
-  .hero-float { animation: none; transition: none; }
-  .hero-float:hover { scale: none; }
-}
-
-/* ============ entrances (see components/Reveal.tsx) ============ */
-.reveal-ready [data-reveal]:not([data-shown]) { opacity: 0; translate: 0 24px; }
-[data-reveal] {
-  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), translate 600ms cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(var(--i, 0) * 75ms);
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal-ready [data-reveal]:not([data-shown]) { translate: none; }
-  [data-reveal] { transition: opacity 200ms linear; transition-delay: 0ms; }
-}
-
 /* ============ assistant greeting ============ */
 @keyframes greeting-pop {
   from { opacity: 0; translate: 16px 0; scale: 0.9; }
@@ -230,37 +191,34 @@
 .greeting-pop ~ .chat-head, .chat-head:has(+ .greeting-pop) { animation: chat-head-nudge 500ms ease-in-out 2; }
 @media (prefers-reduced-motion: reduce) { .greeting-pop, .chat-head { animation: none !important; } }
 
-/* ============ footer wordmark: letters drawn like a pen tracing them ============ */
-.wordmark path { fill: currentColor; }
-.wordmark[data-state] path {
+/* ============ logo ============ */
+/* The artwork is white on dark in the original; here it takes the text colour, with the finial in gold. */
+.logo-art path { fill: currentColor; }
+.logo-art path.text-gold { color: var(--color-gold); }
+
+/* ============ preloader: the logo is traced, filled, then flies into the header ============ */
+[data-state="drawing"] .logo-art path {
   stroke: currentColor;
-  stroke-width: 1.2;
+  stroke-width: 1.4;
   stroke-linejoin: round;
   stroke-dasharray: 1;   /* pathLength = 1, so 1 is the whole outline */
   stroke-dashoffset: 1;
   fill-opacity: 0;
+  animation: logo-draw 1.3s cubic-bezier(0.65, 0, 0.35, 1) forwards, logo-fill 0.6s ease-out forwards;
+  animation-delay: calc(var(--i) * 65ms), calc(var(--i) * 65ms + 0.95s);
 }
-.wordmark[data-state="drawing"] path,
-.wordmark[data-state="drawn"] path {
-  animation: wm-draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) forwards, wm-fill 0.7s ease-out forwards;
-  animation-delay: calc(var(--i) * 130ms), calc(var(--i) * 130ms + 1.15s);
-}
-@keyframes wm-draw { to { stroke-dashoffset: 0; } }
-@keyframes wm-fill { to { fill-opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .wordmark[data-state] path { stroke-dasharray: none; stroke-dashoffset: 0; fill-opacity: 1; animation: none; }
-}
+[data-state="drawing"] [data-part="text"] path { stroke-width: 2.6; }
+@keyframes logo-draw { to { stroke-dashoffset: 0; } }
+@keyframes logo-fill { to { fill-opacity: 1; } }
 
-/* ============ preloader: the wordmark draws, then flies into the header logo ============ */
 .preloader { display: none; }
 html[data-preload] .preloader { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; }
 html[data-preload="leaving"] .preloader { pointer-events: none; }
-/* visible: letters shift right to meet the header's spacing and would otherwise be cut at the viewBox edge */
 .preloader svg { transform-origin: 0 0; will-change: transform; overflow: visible; }
-[data-logo], [data-logo-sub] { transition: opacity 300ms ease-out; }
-html[data-preload="run"] [data-logo], html[data-preload="run"] [data-logo-sub] { opacity: 0; }
+[data-logo] { transition: opacity 300ms ease-out; }
+html[data-preload="run"] [data-logo] { opacity: 0; }
 /* failsafe: if the page's script never runs (blocked or failed), the cover lifts and the logo returns on its own */
 html[data-preload="run"] .preloader { animation: preload-bail 0s 7s forwards; }
-html[data-preload="run"] [data-logo], html[data-preload="run"] [data-logo-sub] { animation: logo-bail 0s 7s forwards; }
+html[data-preload="run"] [data-logo] { animation: logo-bail 0s 7s forwards; }
 @keyframes preload-bail { to { visibility: hidden; } }
 @keyframes logo-bail { to { opacity: 1; } }

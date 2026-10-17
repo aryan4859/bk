@@ -23,11 +23,11 @@ export default async function AdminReports({ searchParams }: PageProps<"/admin/r
       </div>
 
       {reports.length === 0 ? (
-        <p className="mt-6 rounded-xl bg-surface p-10 text-center text-muted">{resolved ? "Nothing resolved yet." : "No open reports."}</p>
+        <p className="mt-6 rounded-lg bg-surface p-10 text-center text-muted">{resolved ? "Nothing resolved yet." : "No open reports."}</p>
       ) : (
         <ul className="mt-5 space-y-2">
           {reports.map((r) => (
-            <li key={r.id} className="rounded-xl bg-surface p-4">
+            <li key={r.id} className="rounded-lg bg-surface p-4">
               <Link href={`/listings/${r.listing.id}`} className="font-medium hover:underline">{r.listing.title}</Link>
               <p className="mt-1">{r.reason}</p>
               <p className="text-sm text-muted">By {r.reporter.email} · {timeAgo(r.createdAt)} · seller {r.listing.seller.email}</p>

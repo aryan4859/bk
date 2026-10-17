@@ -69,10 +69,10 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
         <div>
           <Gallery images={l.images.map((i) => i.url)} alt={l.title} />
 
-          <h1 className="mt-8 text-[36px] sm:text-[48px]">{l.title}</h1>
+          <h1 className="mt-6 text-[26px] sm:text-[32px]">{l.title}</h1>
           <p className="mt-2 text-sm text-muted">Posted {timeAgo(l.createdAt)} in {l.city}</p>
 
-          <dl className="mt-8 grid grid-cols-2 gap-5 rounded-xl bg-surface p-6 sm:grid-cols-4">
+          <dl className="mt-8 grid grid-cols-2 gap-5 rounded-lg bg-surface p-6 sm:grid-cols-4">
             {specs.map(([k, v]) => (
               <div key={k}>
                 <dt className="text-sm text-muted">{k}</dt>
@@ -86,8 +86,8 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div className="rounded-xl bg-surface p-6">
-            <div className="font-display text-5xl tabular-nums lining-nums text-ink">{formatNpr(l.priceNpr)}</div>
+          <div className="rounded-lg bg-surface p-6">
+            <div className="text-3xl font-bold tabular-nums text-ink">{formatNpr(l.priceNpr)}</div>
             <div className="text-sm text-muted">{l.negotiable ? "Negotiable" : "Fixed price"}</div>
 
             {isOwner ? (
@@ -124,8 +124,8 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             ) : null}
           </div>
 
-          <div className="rounded-xl bg-surface p-6 text-sm">
-            <Link href={`/sellers/${l.seller.id}`} className="font-display text-2xl text-ink hover:underline">{sellerName}</Link>
+          <div className="rounded-lg bg-surface p-6 text-sm">
+            <Link href={`/sellers/${l.seller.id}`} className="text-lg font-semibold text-ink hover:underline">{sellerName}</Link>
             <div className="text-muted">Member since {l.seller.createdAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</div>
             <div className="mt-1">
               {rating._avg.rating ? <Stars avg={rating._avg.rating} count={rating._count._all} /> : <span className="text-muted">No reviews yet</span>}
@@ -133,7 +133,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             </div>
           </div>
 
-          <div className="rounded-xl bg-wash p-5 text-sm text-body">
+          <div className="rounded-lg bg-wash p-5 text-sm text-body">
             We do not inspect bikes or verify listings. Check the bluebook and the owner’s citizenship before paying, and never send money in advance.
           </div>
 
@@ -153,5 +153,5 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
 
 function Banner({ tone, children }: { tone: "ok" | "warn" | "bad"; children: React.ReactNode }) {
   const c = { ok: "bg-ok/10 text-ok", warn: "bg-warn/10 text-warn", bad: "bg-error/10 text-error" }[tone];
-  return <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${c}`}>{children}</div>;
+  return <div className={`mb-6 rounded-lg px-4 py-3 text-sm ${c}`}>{children}</div>;
 }
