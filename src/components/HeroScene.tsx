@@ -93,7 +93,7 @@ export function HeroScene({ cards }: { cards: HeroCard[] }) {
   return (
     <div
       ref={root}
-      className="hero-scene relative aspect-[16/11] w-full overflow-hidden rounded-2xl bg-card sm:aspect-[4/3]"
+      className="hero-scene relative aspect-[16/11] w-full overflow-hidden rounded-2xl bg-wash ring-1 ring-line ring-inset sm:aspect-[4/3]"
       style={{ perspective: `${PERSPECTIVE}px`, ["--px" as string]: 0, ["--py" as string]: 0, ["--sy" as string]: 0 }}
     >
       <div
@@ -103,24 +103,24 @@ export function HeroScene({ cards }: { cards: HeroCard[] }) {
           transform: "rotateX(calc(var(--py) * -7deg)) rotateY(calc(var(--px) * 9deg))",
         }}
       >
-        {/* sky and sun: flat cream, the sun is the scene's one coral shape */}
-        <div aria-hidden className="absolute inset-0 bg-card" style={z(-160)}>
+        {/* sky and sun: flat paper tones, the sun the page's one red */}
+        <div aria-hidden className="absolute inset-0 bg-wash" style={z(-160)}>
           <div className="absolute right-[18%] top-[13%] aspect-square w-[16%] rounded-full bg-accent" />
         </div>
-        {/* far range, drawn as line art: cream fill, warm grey line, cream snow caps */}
+        {/* far range, drawn as line art: light fill, soft grey line, white snow caps */}
         <svg aria-hidden viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" className="absolute inset-0 h-full w-full" style={z(-100)}>
-          <path className="fill-cream stroke-muted-soft" strokeWidth="1.2" strokeLinejoin="round" d="M-4 175 L38 136 L66 152 L108 98 L138 128 L176 78 L212 122 L246 101 L282 138 L322 88 L362 130 L404 108 V304 H-4Z" />
+          <path className="fill-card stroke-muted-soft" strokeWidth="1.2" strokeLinejoin="round" d="M-4 175 L38 136 L66 152 L108 98 L138 128 L176 78 L212 122 L246 101 L282 138 L322 88 L362 130 L404 108 V304 H-4Z" />
           <path className="fill-snow stroke-muted-soft" strokeWidth="1" strokeLinejoin="round" d="M108 98 L97 111 L104 108 L110 114 L118 109ZM176 78 L163 94 L171 90 L177 97 L186 90ZM322 88 L310 102 L318 99 L324 105 L332 100Z" />
         </svg>
         {/* near range: canvas fill with an ink line */}
         <svg aria-hidden viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" className="absolute inset-0 h-full w-full" style={z(-55)}>
           <path className="fill-canvas stroke-ink" strokeWidth="1.6" strokeLinejoin="round" d="M-4 210 L46 170 L84 190 L128 152 L168 186 L214 162 L258 194 L300 168 L346 196 L404 172 V304 H-4Z" />
         </svg>
-        {/* ground and the road into the hills: the dark surface, coral centre line */}
+        {/* ground and the road into the hills, with a dashed centre line */}
         <svg aria-hidden viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" className="absolute inset-0 h-full w-full" style={z(0)}>
-          <path className="fill-dark" d="M-4 238 Q200 214 404 238 V304 H-4Z" />
-          <path className="fill-dark-2" d="M136 300 L196 227 L204 227 L264 300Z" />
-          <path className="stroke-accent" strokeWidth="2.5" strokeDasharray="9 7" d="M200 300 V229" />
+          <path className="fill-cream" d="M-4 238 Q200 214 404 238 V304 H-4Z" />
+          <path className="fill-muted-soft" d="M136 300 L196 227 L204 227 L264 300Z" />
+          <path className="stroke-canvas" strokeWidth="2.5" strokeDasharray="9 7" d="M200 300 V229" />
         </svg>
         {/* the bikes */}
         {cards.filter((c) => !gone.includes(c.id)).slice(0, CARD_POSES.length).map((c, i) => {
@@ -129,13 +129,13 @@ export function HeroScene({ cards }: { cards: HeroCard[] }) {
             <div key={c.id} className={`absolute ${pose.box}`} style={z(pose.depth)}>
               <Link
                 href={`/listings/${c.id}`}
-                className="hero-float group block rounded-xl bg-canvas p-1.5 outline-offset-4"
+                className="hero-float group block rounded-xl bg-canvas p-1.5 shadow-pop outline-offset-4"
                 style={{ transform: pose.turn, animationDelay: pose.delay }}
               >
-                <span className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-cream">
+                <span className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-card">
                   <Image src={c.url} alt={c.title} fill sizes="(min-width: 1024px) 220px, 40vw" priority={i === 0} onError={() => setGone((g) => [...g, c.id])} className="object-cover" />
                 </span>
-                <span className={`absolute -bottom-3 left-3 z-10 whitespace-nowrap rounded-md bg-dark px-2 py-0.5 font-display tabular-nums lining-nums text-on-dark ${i === 0 ? "text-lg" : "text-base"}`}>
+                <span className={`absolute -bottom-3 left-3 z-10 whitespace-nowrap rounded-md bg-raised px-2 py-0.5 font-semibold tabular-nums text-ink shadow-pop ${i === 0 ? "text-lg" : "text-base"}`}>
                   {formatNpr(c.priceNpr)}
                 </span>
               </Link>

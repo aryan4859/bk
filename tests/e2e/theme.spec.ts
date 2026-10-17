@@ -1,8 +1,8 @@
 import { expect, test } from "./fixtures";
 
 const bg = (page: import("@playwright/test").Page) => page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
-const DARK = "rgb(24, 23, 21)";   // #181715
-const LIGHT = "rgb(250, 249, 245)"; // #faf9f5
+const DARK = "rgb(23, 21, 19)";     // #171513
+const LIGHT = "rgb(247, 244, 238)"; // #f7f4ee
 
 test.describe("dark mode", () => {
   test("follows the device setting", async ({ browser }) => {
@@ -30,12 +30,12 @@ test.describe("dark mode", () => {
     void consoleErrors;
   });
 
-  test("text on coral stays dark ink in both themes", async ({ page }) => {
-    for (const scheme of ["light", "dark"] as const) {
+  test("the primary button is rhododendron red in both themes, with readable text", async ({ page }) => {
+    for (const [scheme, fill, text] of [["light", "rgb(184, 50, 42)", "rgb(255, 255, 255)"], ["dark", "rgb(224, 100, 90)", "rgb(23, 21, 19)"]] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
       const sell = page.getByRole("banner").getByRole("link", { name: /^Sell/ });
-      expect(await sell.evaluate((e) => getComputedStyle(e).color)).toBe("rgb(20, 20, 19)");
+      expect(await sell.evaluate((e) => [getComputedStyle(e).backgroundColor, getComputedStyle(e).color])).toEqual([fill, text]);
     }
   });
 });

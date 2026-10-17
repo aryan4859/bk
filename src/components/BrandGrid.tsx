@@ -15,15 +15,15 @@ export function BrandGrid({ brands, counts }: { brands: readonly string[]; count
           <li key={b} data-reveal style={{ "--i": i % 7 } as React.CSSProperties}>
             <Link
               href={`/listings?brand=${encodeURIComponent(b)}`}
-              className="group flex h-full flex-col rounded-xl bg-canvas p-2 transition-colors duration-150 hover:bg-cream sm:p-2.5"
+              className="group flex h-full flex-col rounded-xl border border-line bg-raised p-2 transition-colors duration-150 hover:border-ink sm:p-2.5"
             >
               {/* a light plate in both themes, so dark logos stay visible in dark mode */}
-              <span className="flex h-16 items-center justify-center rounded-lg bg-snow px-3 py-2.5 transition-transform duration-200 group-hover:scale-[1.02] sm:h-20">
+              <span className="flex h-16 items-center justify-center rounded-lg bg-snow px-3 py-2.5 sm:h-20">
                 {LOGO[b] ? (
                   // eslint-disable-next-line @next/next/no-img-element -- small static SVGs; the image optimizer adds nothing for vectors
                   <img src={`/brands/${LOGO[b]}.svg`} alt={`${b} logo`} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 ) : (
-                  <span className="font-display text-2xl text-on-snow">{b}</span>
+                  <span className="text-lg font-semibold tracking-tight text-on-snow">{b}</span>
                 )}
               </span>
               <span className="mt-2 px-1 text-sm font-medium text-ink">{b}</span>

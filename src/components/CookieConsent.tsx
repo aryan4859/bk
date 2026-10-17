@@ -59,7 +59,7 @@ export function CookieConsent() {
       onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
       className="fixed inset-x-3 bottom-[calc(var(--compare-bar,0px)+0.75rem)] z-50 rounded-xl bg-dark p-6 text-on-dark-soft shadow-pop sm:inset-x-auto sm:bottom-[calc(var(--compare-bar,0px)+1.25rem)] sm:right-5 sm:max-w-sm"
     >
-      <h2 id="cookie-title" className="text-[28px] text-on-dark">Cookies</h2>
+      <h2 id="cookie-title" className="text-xl text-on-dark">Cookies</h2>
       <p id="cookie-desc" className="mt-2 text-sm">
         We use one essential cookie to keep you logged in. We would only use optional cookies (such as analytics or embedded maps) if you accept them, and we do not use any yet.
         See the <Link href="/cookies" className="text-on-dark underline underline-offset-4">cookie policy</Link> and <Link href="/privacy" className="text-on-dark underline underline-offset-4">privacy policy</Link>.

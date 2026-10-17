@@ -7,7 +7,7 @@ const button = cva("", {
     variant: {
       primary: "btn-primary",
       outline: "btn-outline",
-      // on a coral or dark band: the cream button
+      // on an inverse (dark) band
       onColor: "btn bg-canvas text-ink active:bg-cream",
     },
   },

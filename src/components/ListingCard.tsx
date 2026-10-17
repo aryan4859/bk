@@ -27,16 +27,16 @@ export function ListingCard({ listing: l, compare = false, priority = false, ind
     <div className="relative" data-reveal style={{ "--i": index % 4 } as React.CSSProperties}>
       <Link href={`/listings/${l.id}`} className="group block">
         <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-card">
-          <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">
+          <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]">
             <Photo src={l.images[0]?.url} alt={`${l.year} ${l.brand} ${l.model}${l.images[0] ? "" : " (no photo)"}`} priority={priority} />
           </div>
           {l.status === "SOLD" && <Chip tone="dark" className="absolute left-2 top-2 z-10">Sold</Chip>}
           {featured && <Chip tone="featured" className="absolute left-2 top-2 z-10">Featured</Chip>}
-          <Chip tone="price" className="absolute bottom-2 left-2 z-10 !text-base sm:!text-lg">{formatNpr(l.priceNpr)}</Chip>
         </div>
         <div className="mt-3">
-          <div className="truncate font-medium text-ink group-hover:underline">{l.brand} {l.model}</div>
-          <div className="text-sm text-muted">{l.year}, {formatKm(l.kmDriven)}</div>
+          <div className="truncate font-medium text-ink underline-offset-4 group-hover:underline">{l.brand} {l.model}</div>
+          <div className="mt-0.5 font-semibold tabular-nums text-ink">{formatNpr(l.priceNpr)}</div>
+          <div className="mt-1 text-sm text-muted">{l.year}, {formatKm(l.kmDriven)}</div>
           <div className="text-sm text-muted">{l.city}{l.negotiable ? ", negotiable" : ""}</div>
           {l.rating && <Stars avg={l.rating.avg} count={l.rating.count} className="mt-0.5 text-sm" />}
         </div>

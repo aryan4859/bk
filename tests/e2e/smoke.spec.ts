@@ -26,21 +26,28 @@ test.describe("public pages", () => {
 
   test("home shows the hero search and live count", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Used bikes and scooters");
-    await expect(page.getByText(/\d+ for sale right now/)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your next bike");
+    await expect(page.getByText(/\d+ bikes for sale in \d+ cit(y|ies)/)).toBeVisible();
   });
 
   test("home search panel: type, brand, model and budget lead to filtered results", async ({ page }) => {
     await page.goto("/");
+    const brands = page.locator("#hs-brand");
     const models = page.locator("#hs-model");
-    const before = await models.locator("option").count();
-    await page.locator("#hs-brand").selectOption("Bajaj");
-    await expect(models.locator("option")).toHaveText(["Any model", "Pulsar NS200"]); // follows the brand
-    expect(before).toBeGreaterThan(2);
-    await models.selectOption("Pulsar NS200");
+    // scooters and motorcycles have their own lists: KTM makes no scooters, Bajaj only the Chetak
+    await page.locator("label", { hasText: "Scooters" }).click();
+    await expect(brands.locator("option", { hasText: "KTM" })).toHaveCount(0);
+    await brands.selectOption("Bajaj");
+    await expect(models.locator("option")).toHaveText(["Any scooter", "Chetak"]);
+    // motorcycles: the whole range, live ads marked with their count
     await page.locator("label", { hasText: "Motorcycles" }).click();
+    await expect(brands).toHaveValue("Bajaj"); // still a motorcycle brand, so it is kept
+    await expect(models.locator("option", { hasText: "Dominar 400" })).toHaveCount(1);
+    await expect(models.locator("option", { hasText: "Chetak" })).toHaveCount(0);
+    await expect(models.locator("option[value='Pulsar NS200']")).toHaveText("Pulsar NS200 (1 for sale)");
+    await models.selectOption("Pulsar NS200");
     await page.locator("#hs-budget").selectOption("3l-5l");
-    await page.getByRole("button", { name: "Search bikes" }).click();
+    await page.getByRole("button", { name: "Search motorcycles" }).click();
     // empty fields (year) are left out of the address
     await expect(page).toHaveURL(/\/listings\?type=MOTORCYCLE&brand=Bajaj&model=Pulsar\+NS200&budget=3l-5l$/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("1 Bajaj bike");
