@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { BRANDS, CITIES, MAX_IMAGES } from "@/lib/constants";
+import { type BikeType, CATALOG } from "@/lib/catalog";
+import { BRANDS, CITIES, CONDITIONS, MAX_IMAGES } from "@/lib/constants";
 import type { FormState } from "@/lib/actions";
+import { PhotoPicker } from "./PhotoPicker";
 
 type Initial = {
   type: string; brand: string; model: string; year: number; kmDriven: number; ownerCount: number;
   priceNpr: number; negotiable: boolean; city: string; phone: string; bluebookOk: boolean;
-  title: string; description: string;
+  condition: string | null; lotNumber: number | null;
+  description: string;
 };
 
 type Props = {
@@ -20,12 +23,15 @@ type Props = {
 
 export function ListingForm({ action, initial, images = [], submitLabel }: Props) {
   const [state, formAction, pending] = useActionState(action, undefined);
-  const [previews, setPreviews] = useState<string[]>([]);
   const fe = state?.fieldErrors ?? {};
   const err = (k: string) => fe[k] && <p className="mt-1 text-sm text-error">{fe[k]}</p>;
   const year = new Date().getFullYear();
   // after a failed submit React resets the form, so re-seed it from what the server echoed back
-  const v = (k: keyof Initial, fallback: string | number | undefined) => String(state?.values?.[k] ?? fallback ?? "");
+  const v = (k: keyof Initial, fallback: string | number | null | undefined) => String(state?.values?.[k] ?? fallback ?? "");
+  // type and brand decide which models the model picker offers
+  const [type, setType] = useState(() => v("type", initial?.type ?? "MOTORCYCLE") as BikeType);
+  const [brand, setBrand] = useState(() => v("brand", initial?.brand));
+  const startModel = { type: v("type", initial?.type ?? "MOTORCYCLE"), brand: v("brand", initial?.brand), model: v("model", initial?.model) };
   const checked = (k: "negotiable" | "bluebookOk", fallback: boolean) => (state?.values ? state.values[k] === "on" : fallback);
 
   return (
@@ -48,41 +54,36 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
             ))}
           </div>
         )}
-        <input
-          type="file" name="images" accept="image/jpeg,image/png,image/webp" multiple
-          onChange={(e) => setPreviews(Array.from(e.target.files ?? []).map((f) => URL.createObjectURL(f)))}
-          aria-label="Choose photos" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-cream file:font-medium file:text-ink file:px-3 file:py-2 file:text-sm "
-        />
-        {previews.length > 0 && (
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
-            {previews.map((p) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={p} src={p} alt="" className="aspect-square w-full rounded-md object-cover" />
-            ))}
-          </div>
-        )}
+        {images.length < MAX_IMAGES
+          ? <PhotoPicker room={MAX_IMAGES - images.length} hasCover={images.length > 0} />
+          : <p className="text-sm text-muted">This ad has the most photos it can take. Tick Remove on one to make room for a new one, save, then add it.</p>}
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-3 text-lg font-semibold">The bike</legend>
         <div>
           <label className="label" htmlFor="type">Type</label>
-          <select id="type" name="type" defaultValue={v("type", initial?.type ?? "MOTORCYCLE")} className="input">
+          <select id="type" name="type" value={type} onChange={(e) => setType(e.target.value as BikeType)} className="input">
             <option value="MOTORCYCLE">Motorcycle</option>
             <option value="SCOOTER">Scooter</option>
           </select>
         </div>
         <div>
           <label className="label" htmlFor="brand">Brand</label>
-          <select id="brand" name="brand" defaultValue={v("brand", initial?.brand)} required className="input">
+          <select id="brand" name="brand" value={brand} onChange={(e) => setBrand(e.target.value)} required className="input">
             <option value="" disabled>Choose…</option>
             {BRANDS.map((b) => <option key={b}>{b}</option>)}
           </select>
           {err("brand")}
         </div>
         <div>
-          <label className="label" htmlFor="model">Model</label>
-          <input id="model" name="model" defaultValue={v("model", initial?.model)} placeholder="Pulsar NS200" className="input" />
+          {/* a fresh picker per brand and type; the saved model is only pre-selected for the brand and type it belongs to */}
+          <ModelField
+            key={`${brand}|${type}`}
+            brand={brand}
+            models={brand in CATALOG ? CATALOG[brand as keyof typeof CATALOG][type] : []}
+            initial={brand === startModel.brand && type === startModel.type ? startModel.model : ""}
+          />
           {err("model")}
         </div>
         <div>
@@ -99,6 +100,27 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
           <label className="label" htmlFor="ownerCount">Number of owners</label>
           <input id="ownerCount" name="ownerCount" type="number" min={1} max={10} defaultValue={v("ownerCount", initial?.ownerCount ?? 1)} className="input" />
         </div>
+        <div>
+          <label className="label" htmlFor="lotNumber">Lot number <span className="font-normal text-muted">(optional)</span></label>
+          <input id="lotNumber" name="lotNumber" type="number" inputMode="numeric" min={1} max={999} defaultValue={v("lotNumber", initial?.lotNumber)} placeholder="87" aria-describedby="lot-hint" className="input" />
+          <p id="lot-hint" className="mt-1 text-xs text-muted">The number between the letters on the plate, like 87 in Ba 87 Pa 1234. Leave blank for embossed plates.</p>
+          {err("lotNumber")}
+        </div>
+        <fieldset className="sm:col-span-2">
+          <legend className="label">Condition</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {Object.entries(CONDITIONS).map(([key, c]) => (
+              <label key={key} className="cursor-pointer">
+                <input type="radio" name="condition" value={key} required defaultChecked={v("condition", initial?.condition) === key} className="peer sr-only" />
+                <span className="flex h-full flex-col rounded-md border border-field/60 bg-raised px-3 py-2.5 transition-colors peer-checked:border-brand peer-checked:bg-brand/5 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink hover:border-field">
+                  <span className="text-sm font-semibold text-ink">{c.label}</span>
+                  <span className="text-xs text-muted">{c.hint}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {err("condition")}
+        </fieldset>
         <label className="flex items-center gap-2 text-base sm:col-span-2">
           <input type="checkbox" name="bluebookOk" defaultChecked={checked("bluebookOk", initial?.bluebookOk ?? false)} /> The bluebook is up to date and I have it with me
         </label>
@@ -132,12 +154,7 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
       <fieldset className="space-y-4">
         <legend className="mb-1 text-lg font-semibold">Description</legend>
         <div>
-          <label className="label" htmlFor="title">Title</label>
-          <input id="title" name="title" defaultValue={v("title", initial?.title)} placeholder="Pulsar NS200, single owner, new tyres" className="input" />
-          {err("title")}
-        </div>
-        <div>
-          <label className="label" htmlFor="description">Condition and details</label>
+          <label className="label" htmlFor="description">Details</label>
           <textarea id="description" name="description" rows={6} defaultValue={v("description", initial?.description)} placeholder="Service history, accidents, modifications, why you are selling…" className="input" />
           {err("description")}
         </div>
@@ -157,5 +174,44 @@ export function ListingForm({ action, initial, images = [], submitLabel }: Props
         <span className="text-sm text-muted">New and edited ads are reviewed before they go live.</span>
       </div>
     </form>
+  );
+}
+
+const OTHER = "__other";
+
+/**
+ * The model, picked from the brand's catalogue for the chosen type, with "Other model" for anything missing.
+ * Brands we have no models for get a plain text box. Whichever control is showing carries name="model".
+ */
+function ModelField({ brand, models, initial }: { brand: string; models: readonly string[]; initial: string }) {
+  const [choice, setChoice] = useState(initial ? (models.includes(initial) ? initial : OTHER) : "");
+  const typed = (
+    <input id={models.length ? "model-other" : "model"} name="model" defaultValue={models.includes(initial) ? "" : initial} required
+      autoFocus={models.length > 0 && !initial} placeholder="Type the model" className="input" />
+  );
+  if (!brand) {
+    return (
+      <>
+        <label className="label" htmlFor="model">Model</label>
+        <select id="model" disabled className="input"><option>Choose a brand first</option></select>
+      </>
+    );
+  }
+  if (models.length === 0) return <><label className="label" htmlFor="model">Model</label>{typed}</>;
+  return (
+    <>
+      <label className="label" htmlFor="model">Model</label>
+      <select id="model" name={choice === OTHER ? undefined : "model"} value={choice} onChange={(e) => setChoice(e.target.value)} required className="input">
+        <option value="" disabled>Choose…</option>
+        {models.map((m) => <option key={m}>{m}</option>)}
+        <option value={OTHER}>Other model (type it)</option>
+      </select>
+      {choice === OTHER && (
+        <div className="mt-2">
+          <label className="sr-only" htmlFor="model-other">Model name</label>
+          {typed}
+        </div>
+      )}
+    </>
   );
 }

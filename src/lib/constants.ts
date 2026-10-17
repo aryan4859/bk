@@ -1,7 +1,15 @@
 export const BRANDS = [
   "Bajaj", "Hero", "Honda", "Yamaha", "TVS", "Suzuki", "Royal Enfield", "KTM",
-  "Mahindra", "Vespa", "Aprilia", "Benelli", "CFMoto", "Husqvarna", "Other",
+  "Mahindra", "Vespa", "Aprilia", "Benelli", "CFMoto", "Husqvarna",
+  // the rest alphabetically; the first 14 are the popular ones shown up front on the home page
+  "Ampere", "Ather", "BMW", "Crossfire", "CX", "Ducati", "Garow", "Hartford", "Jawa", "Keren", "Morbidelli",
+  "Motorhead", "MV Agusta", "Niu", "Revolt", "Segway", "Super Soco", "Triumph", "Ultraviolette", "Yadea",
+  "Yatri", "Yezdi", "Zeeho", "Zonsen", "Zontes", "Zuumav", "ZXMoto",
+  "Other",
 ] as const;
+
+/** How many brands (from the start of BRANDS) the home page shows before "All brands". */
+export const POPULAR_BRAND_COUNT = 14;
 
 export const CITIES = [
   "Kathmandu", "Lalitpur", "Bhaktapur", "Pokhara", "Biratnagar", "Birgunj",
@@ -10,6 +18,15 @@ export const CITIES = [
 ] as const;
 
 export const TYPE_LABEL = { MOTORCYCLE: "Motorcycle", SCOOTER: "Scooter" } as const;
+
+/** The seller's own rating of the bike, with the hint shown on the sell form. */
+export const CONDITIONS = {
+  EXCELLENT: { label: "Excellent", hint: "Like new, no faults" },
+  GOOD: { label: "Good", hint: "Normal wear, runs well" },
+  FAIR: { label: "Fair", hint: "Visible wear or small faults" },
+  NEEDS_WORK: { label: "Needs work", hint: "Needs repairs before regular use" },
+} as const;
+export type Condition = keyof typeof CONDITIONS;
 
 export const SORTS = {
   newest: "Newest first",

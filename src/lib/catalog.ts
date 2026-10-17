@@ -80,6 +80,97 @@ export const CATALOG: Record<Brand, Record<BikeType, string[]>> = {
   Husqvarna: {
     MOTORCYCLE: ["Svartpilen 250", "Svartpilen 401", "Vitpilen 250", "Vitpilen 401"],
     SCOOTER: [],
+  },  Ampere: {
+    MOTORCYCLE: [],
+    SCOOTER: ["Magnus EX", "Reo", "Primus", "Nexus", "Zeal"],
+  },
+  Ather: {
+    MOTORCYCLE: [],
+    SCOOTER: ["450S", "450X", "450 Apex", "Rizta"],
+  },
+  BMW: {
+    MOTORCYCLE: ["G 310 R", "G 310 GS", "G 310 RR", "F 900 R", "F 850 GS", "F 900 GS", "R 1250 GS", "R 1300 GS", "S 1000 RR", "M 1000 RR"],
+    SCOOTER: ["C 400 X", "C 400 GT", "CE 04"],
+  },
+  // an empty range means we don't know the Nepal lineup yet: the brand is offered for any type and its
+  // models come from the ads people post
+  Crossfire: { MOTORCYCLE: [], SCOOTER: [] },
+  CX: { MOTORCYCLE: [], SCOOTER: [] },
+  Ducati: {
+    MOTORCYCLE: [
+      "Monster", "Scrambler Icon", "Scrambler Full Throttle", "Scrambler Nightshift", "Panigale V2", "Panigale V4",
+      "Streetfighter V2", "Streetfighter V4", "Multistrada V2", "Multistrada V4", "Diavel V4", "DesertX", "Hypermotard 950",
+    ],
+    SCOOTER: [],
+  },
+  Garow: { MOTORCYCLE: [], SCOOTER: [] },
+  Hartford: { MOTORCYCLE: [], SCOOTER: [] },
+  Jawa: {
+    MOTORCYCLE: ["Jawa 42", "42 Bobber", "Jawa 350", "Perak"],
+    SCOOTER: [],
+  },
+  Keren: { MOTORCYCLE: [], SCOOTER: [] },
+  Morbidelli: {
+    MOTORCYCLE: ["C252V", "T502X"],
+    SCOOTER: [],
+  },
+  Motorhead: { MOTORCYCLE: [], SCOOTER: [] },
+  "MV Agusta": {
+    MOTORCYCLE: ["Brutale 800", "Dragster 800", "F3 800", "Superveloce 800", "Turismo Veloce 800", "Enduro Veloce"],
+    SCOOTER: [],
+  },
+  Niu: {
+    MOTORCYCLE: [],
+    SCOOTER: ["NQi", "MQi", "UQi", "MQi GT"],
+  },
+  Revolt: {
+    MOTORCYCLE: ["RV400", "RV400 BRZ", "RV1", "RV1+", "RV BlazeX"],
+    SCOOTER: [],
+  },
+  Segway: {
+    MOTORCYCLE: [],
+    SCOOTER: ["E110S", "E125S", "E300SE"],
+  },
+  "Super Soco": {
+    MOTORCYCLE: ["TC", "TC Max", "TSX"],
+    SCOOTER: ["CUx", "CPx"],
+  },
+  Triumph: {
+    MOTORCYCLE: [
+      "Speed 400", "Scrambler 400 X", "Trident 660", "Street Triple R", "Street Triple RS", "Tiger Sport 660",
+      "Tiger 900", "Bonneville T100", "Bonneville T120", "Speed Twin 900", "Speed Twin 1200", "Rocket 3",
+    ],
+    SCOOTER: [],
+  },
+  Ultraviolette: {
+    MOTORCYCLE: ["F77", "F77 Mach 2"],
+    SCOOTER: [],
+  },
+  Yadea: {
+    MOTORCYCLE: [],
+    SCOOTER: ["G5", "C1S", "E8S"],
+  },
+  Yatri: {
+    MOTORCYCLE: ["P-0", "P-1"],
+    SCOOTER: [],
+  },
+  Yezdi: {
+    MOTORCYCLE: ["Roadster", "Scrambler", "Adventure"],
+    SCOOTER: [],
+  },
+  Zeeho: {
+    MOTORCYCLE: [],
+    SCOOTER: ["AE8"],
+  },
+  Zonsen: { MOTORCYCLE: [], SCOOTER: [] },
+  Zontes: {
+    MOTORCYCLE: ["ZT125-U", "350R", "350T", "350X"],
+    SCOOTER: ["350D", "350E"],
+  },
+  Zuumav: { MOTORCYCLE: [], SCOOTER: [] },
+  ZXMoto: {
+    MOTORCYCLE: ["820RR-RS"],
+    SCOOTER: [],
   },
 };
 
@@ -107,7 +198,8 @@ function modelsOf(brand: Brand, type: BikeType, listed: Listed[]): ModelOption[]
 /** Brands offered for a type ("" = all types): only those that make that kind of bike or have one listed. */
 export function brandsFor(type: BikeType | "", listed: Listed[] = []): Brand[] {
   const types = type ? [type] : TYPES;
-  return (Object.keys(CATALOG) as Brand[]).filter((b) => types.some((t) => modelsOf(b, t, listed).length > 0));
+  const unknownRange = (b: Brand) => TYPES.every((t) => CATALOG[b][t].length === 0);
+  return (Object.keys(CATALOG) as Brand[]).filter((b) => unknownRange(b) || types.some((t) => modelsOf(b, t, listed).length > 0));
 }
 
 /**

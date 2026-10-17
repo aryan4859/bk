@@ -16,19 +16,22 @@ test.describe.serial("selling and chatting", () => {
     await page.goto("/sell");
     await page.locator("input[type=file]").setInputFiles(photo);
     await page.getByLabel("Brand").selectOption("TVS");
-    await page.getByLabel("Model").fill("Apache RTR 160");
+    await page.getByLabel("Model", { exact: true }).selectOption("Apache RTR 160");
     await page.getByLabel("Year (AD)").fill("2020");
     await page.getByLabel("Kilometres driven").fill("15000");
+    await page.getByLabel("Lot number").fill("87");
+    await page.getByRole("radio", { name: /^Good/ }).check();
     await page.getByLabel("Asking price (Rs.)").fill("240000");
     await page.getByLabel("City").selectOption("Butwal");
     await page.getByLabel("Mobile number buyers can call").fill("9841234567");
-    await page.getByLabel("Title").fill("TVS Apache RTR 160 in great shape");
-    await page.getByLabel("Condition and details").fill("Single owner, regular servicing, new tyres fitted last month.");
+    await page.getByLabel("Details", { exact: true }).fill("Single owner, regular servicing, new tyres fitted last month.");
     await page.getByLabel(/I own this bike/).check();
     await page.getByRole("button", { name: /Post|Submit|Publish/ }).click();
     await expect(page).toHaveURL(/\/listings\/.+\?posted=1/);
     await expect(page.getByText("Your ad is posted and waiting for review")).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("TVS Apache RTR 160 in great shape");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("TVS Apache RTR 160 2020");
+    await expect(page.getByText("Good", { exact: true })).toBeVisible();
+    await expect(page.getByText("87", { exact: true })).toBeVisible();
     void consoleErrors;
   });
 
@@ -37,14 +40,15 @@ test.describe.serial("selling and chatting", () => {
     await page.goto("/sell");
     await page.locator("input[type=file]").setInputFiles(photo);
     await page.getByLabel("Brand").selectOption("Honda");
-    await page.getByLabel("Model").fill("Shine");
+    await page.getByLabel("Model", { exact: true }).selectOption("Shine 125");
+    await page.getByRole("radio", { name: /^Fair/ }).check();
     await page.getByLabel("City").selectOption("Pokhara");
-    await page.getByLabel("Title").fill("abc");
+    await page.getByLabel("Details", { exact: true }).fill("Too short");
     await page.getByLabel(/I own this bike/).check();
     await page.getByRole("button", { name: /Post|Submit|Publish/ }).click();
     await expect(page.getByText("Please fix the highlighted fields.")).toBeVisible();
-    await expect(page.getByText(/at least 5 characters/)).toBeVisible();
-    await expect(page.getByLabel("Model")).toHaveValue("Shine");
+    await expect(page.getByText(/at least 20 characters/)).toBeVisible();
+    await expect(page.getByLabel("Model", { exact: true })).toHaveValue("Shine 125");
   });
 
   test("a non-image upload is refused", async ({ page, context }) => {
@@ -52,14 +56,14 @@ test.describe.serial("selling and chatting", () => {
     await page.goto("/sell");
     await page.locator("input[type=file]").setInputFiles({ name: "evil.jpg", mimeType: "image/jpeg", buffer: Buffer.from("<?php system($_GET['c']); ?>") });
     await page.getByLabel("Brand").selectOption("Honda");
-    await page.getByLabel("Model").fill("Shine");
+    await page.getByLabel("Model", { exact: true }).selectOption("Shine 125");
     await page.getByLabel("Year (AD)").fill("2020");
     await page.getByLabel("Kilometres driven").fill("1000");
+    await page.getByRole("radio", { name: /^Excellent/ }).check();
     await page.getByLabel("Asking price (Rs.)").fill("150000");
     await page.getByLabel("City").selectOption("Pokhara");
     await page.getByLabel("Mobile number buyers can call").fill("9841234567");
-    await page.getByLabel("Title").fill("Honda Shine good condition");
-    await page.getByLabel("Condition and details").fill("Runs well, all papers are clear, no accidents.");
+    await page.getByLabel("Details", { exact: true }).fill("Runs well, all papers are clear, no accidents.");
     await page.getByLabel(/I own this bike/).check();
     await page.getByRole("button", { name: /Post|Submit|Publish/ }).click();
     await expect(page.getByText(/JPEG, PNG or WebP|could not be read/)).toBeVisible();

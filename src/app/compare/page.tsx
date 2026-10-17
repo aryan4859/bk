@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Compare bikes", robots: { index: fal
 export default async function Compare({ searchParams }: PageProps<"/compare">) {
   const ids = parseCompareIds((await searchParams).ids);
   const found = ids.length
-    ? await db.listing.findMany({ where: { id: { in: ids }, status: { in: ["ACTIVE", "SOLD"] } }, select: { ...cardSelect, type: true, ownerCount: true, bluebookOk: true } })
+    ? await db.listing.findMany({ where: { id: { in: ids }, status: { in: ["ACTIVE", "SOLD"] } }, select: { ...cardSelect, type: true, ownerCount: true, bluebookOk: true, condition: true, lotNumber: true } })
     : [];
   // keep the order the visitor picked
   const items = ids.flatMap((id) => found.filter((l) => l.id === id));

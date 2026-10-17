@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { type BikeType, type Listed, brandsFor, modelGroups } from "@/lib/catalog";
+import { type BikeType, CATALOG, type Listed, brandsFor, modelGroups } from "@/lib/catalog";
 import { BUDGETS } from "@/lib/constants";
 
 const TYPES = [["", "All bikes"], ["MOTORCYCLE", "Motorcycles"], ["SCOOTER", "Scooters"]] as const;
@@ -20,6 +20,8 @@ export function HeroSearch({ listed }: { listed: Listed[] }) {
   const brands = brandsFor(type, listed);
   const groups = modelGroups(type, brand, listed);
   const noun = type === "SCOOTER" ? "scooter" : type === "MOTORCYCLE" ? "motorcycle" : "model";
+  // brands whose range we haven't catalogued yet: say "any", not "none"
+  const unknownRange = brand in CATALOG && Object.values(CATALOG[brand as keyof typeof CATALOG]).every((m) => m.length === 0);
 
   // switching type keeps the brand and model only if they still exist for it
   function pickType(next: BikeType | "") {
@@ -59,7 +61,7 @@ export function HeroSearch({ listed }: { listed: Listed[] }) {
         <div>
           <label htmlFor="hs-model" className="label">Model</label>
           <select id="hs-model" name="model" value={model} onChange={(e) => setModel(e.target.value)} className="input">
-            <option value="">{groups.length ? `Any ${noun}` : `No ${noun}s from ${brand}`}</option>
+            <option value="">{groups.length || unknownRange ? `Any ${noun}` : `No ${noun}s from ${brand}`}</option>
             {groups.map((g) => (
               <optgroup key={g.label} label={g.label}>
                 {g.models.map((m) => (

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin, requireUser } from "./auth";
 import { flash } from "./flash";
-import { BRANDS, CITIES, FEATURE_DAYS, MAX_IMAGES } from "./constants";
+import { BRANDS, CITIES, CONDITIONS, type Condition, FEATURE_DAYS, MAX_IMAGES } from "./constants";
 import { db } from "./db";
 import { saveImage } from "./images";
 import { normalizePhone } from "./format";
@@ -54,11 +54,14 @@ const listingSchema = z.object({
   city: z.enum(CITIES),
   phone: z.string().transform(normalizePhone).refine((p) => /^977(98|97|96)\d{8}$/.test(p), "Enter a valid Nepali mobile number (98XXXXXXXX)"),
   bluebookOk: z.boolean(),
+  condition: z.enum(Object.keys(CONDITIONS) as [Condition, ...Condition[]], "Choose the condition"),
+  // optional: blank on embossed plates
+  lotNumber: z.preprocess((v) => (v === "" || v == null ? null : v), z.coerce.number().int("Enter the lot as a whole number").min(1, "Lot number looks wrong").max(999, "Lot number looks wrong").nullable()),
   confirm: z.literal(true, "Please confirm this before posting"),
-  title: z.string().trim().min(5, "Add a short title (at least 5 characters)").max(100),
   description: z.string().trim().min(20, "Describe the condition in at least 20 characters").max(3000),
+// the title isn't typed by the seller: it is always "Brand Model Year", e.g. "Bajaj Pulsar NS200 2019"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-}).transform(({ confirm, ...rest }) => rest);
+}).transform(({ confirm, ...rest }) => ({ ...rest, title: `${rest.brand} ${rest.model} ${rest.year}` }));
 
 function parseListing(formData: FormData) {
   return listingSchema.safeParse({
@@ -73,8 +76,9 @@ function parseListing(formData: FormData) {
     city: formData.get("city"),
     phone: String(formData.get("phone") ?? ""),
     bluebookOk: formData.get("bluebookOk") === "on",
+    condition: formData.get("condition") ?? undefined,
+    lotNumber: String(formData.get("lotNumber") ?? "").trim(),
     confirm: formData.get("confirm") === "on",
-    title: formData.get("title"),
     description: formData.get("description"),
   });
 }

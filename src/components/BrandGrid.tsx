@@ -1,9 +1,13 @@
 import Link from "next/link";
 
-/** Logos in public/brands (sources in public/brands/SOURCES.md). Brands without a reliable logo show their name in type. */
+/** Logo files in public/brands (sources in public/brands/SOURCES.md). Brands without one show their name in type. */
 const LOGO: Record<string, string> = {
-  Bajaj: "bajaj", Hero: "hero", Honda: "honda", Yamaha: "yamaha", Suzuki: "suzuki", "Royal Enfield": "royal-enfield",
-  KTM: "ktm", Mahindra: "mahindra", Vespa: "vespa", Aprilia: "aprilia", CFMoto: "cfmoto", Husqvarna: "husqvarna",
+  Bajaj: "bajaj.svg", Hero: "hero.svg", Honda: "honda.svg", Yamaha: "yamaha.svg", Suzuki: "suzuki.svg", "Royal Enfield": "royal-enfield.svg",
+  KTM: "ktm.svg", Mahindra: "mahindra.svg", Vespa: "vespa.svg", Aprilia: "aprilia.svg", CFMoto: "cfmoto.svg", Husqvarna: "husqvarna.svg",
+  TVS: "tvs.webp", Benelli: "benelli.webp", BMW: "bmw.webp", Crossfire: "crossfire.webp", Ducati: "ducati.webp", Hartford: "hartford.webp",
+  Jawa: "jawa.webp", Morbidelli: "morbidelli.webp", "MV Agusta": "mv-agusta.webp", Revolt: "revolt.webp", "Super Soco": "super-soco.webp",
+  Triumph: "triumph.webp", Ultraviolette: "ultraviolette.webp", Yadea: "yadea.webp", Yezdi: "yezdi.webp", Zonsen: "zonsen.webp",
+  Zontes: "zontes.webp", Zuumav: "zuumav.webp", ZXMoto: "zxmoto.webp",
 };
 
 export function BrandGrid({ brands, counts }: { brands: readonly string[]; counts: Record<string, number> }) {
@@ -20,8 +24,8 @@ export function BrandGrid({ brands, counts }: { brands: readonly string[]; count
               {/* a light plate in both themes, so dark logos stay visible in dark mode */}
               <span className="flex h-12 w-full items-center justify-center rounded bg-snow px-2 py-1.5 sm:h-14">
                 {LOGO[b] ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- small static SVGs; the image optimizer adds nothing for vectors
-                  <img src={`/brands/${LOGO[b]}.svg`} alt={`${b} logo`} loading="lazy" decoding="async" className="h-full w-full object-contain" />
+                  // eslint-disable-next-line @next/next/no-img-element -- small static logos (SVG or a few KB of WebP); the optimizer adds nothing
+                  <img src={`/brands/${LOGO[b]}`} alt={`${b} logo`} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 ) : (
                   <span className="text-lg font-semibold tracking-tight text-on-snow">{b}</span>
                 )}
@@ -35,3 +39,4 @@ export function BrandGrid({ brands, counts }: { brands: readonly string[]; count
     </ul>
   );
 }
+

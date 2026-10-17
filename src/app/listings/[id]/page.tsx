@@ -9,7 +9,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { Stars } from "@/components/Stars";
 import { deleteListing, setSold, startThread, toggleFavorite } from "@/lib/actions";
 import { getUser } from "@/lib/auth";
-import { TYPE_LABEL } from "@/lib/constants";
+import { CONDITIONS, TYPE_LABEL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatKm, formatNpr, timeAgo } from "@/lib/format";
 
@@ -52,7 +52,10 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
   const sellerName = l.seller.name ?? l.seller.email.split("@")[0];
   const specs: [string, string][] = [
     ["Type", TYPE_LABEL[l.type]], ["Brand", l.brand], ["Model", l.model], ["Year", String(l.year)],
-    ["Driven", formatKm(l.kmDriven)], ["Owners", String(l.ownerCount)], ["Bluebook", l.bluebookOk ? "Seller says up to date" : "Not stated by seller"],
+    ["Driven", formatKm(l.kmDriven)], ["Owners", String(l.ownerCount)],
+    ...(l.condition ? [["Condition", CONDITIONS[l.condition].label] as [string, string]] : []),
+    ...(l.lotNumber ? [["Lot number", String(l.lotNumber)] as [string, string]] : []),
+    ["Bluebook", l.bluebookOk ? "Seller says up to date" : "Not stated by seller"],
     ["Location", l.city],
   ];
   const wa = `https://wa.me/${l.phone}?text=${encodeURIComponent(`Hi, is your ${l.brand} ${l.model} still available?`)}`;

@@ -24,6 +24,13 @@ enum ListingStatus {
   REJECTED
 }
 
+enum BikeCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  NEEDS_WORK
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -70,6 +77,10 @@ model Listing {
   city         String
   phone        String
   bluebookOk   Boolean       @default(false)
+  /// the seller's own rating; null on ads posted before it was asked
+  condition    BikeCondition?
+  /// the "lot" on an old-style plate: 87 in "Ba 87 Pa 1234"; embossed plates have none
+  lotNumber    Int?
   status       ListingStatus @default(PENDING)
   rejectReason String?
   /// set by admins; the ad is pinned to the top of results until this moment

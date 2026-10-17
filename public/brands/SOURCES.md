@@ -2,7 +2,7 @@
 
 From Wikimedia Commons, where each file is marked Public Domain (simple logo, not eligible for copyright).
 The names and logos remain trademarks of their owners and are used only to link to listings of that brand.
-TVS and Benelli have no reliable motorcycle logo on Commons, so the site shows their names in type instead.
+Brands with no file listed here show their name in type instead.
 
 - `bajaj.svg`: https://commons.wikimedia.org/wiki/File:Bajaj_Auto_logo.svg
 - `hero.svg`: https://commons.wikimedia.org/wiki/File:Hero_MotoCorp_Logo.svg
@@ -16,3 +16,14 @@ TVS and Benelli have no reliable motorcycle logo on Commons, so the site shows t
 - `aprilia.svg`: https://commons.wikimedia.org/wiki/File:Aprilia-logo.svg
 - `cfmoto.svg`: https://commons.wikimedia.org/wiki/File:CFMOTO_Logo.svg
 - `husqvarna.svg`: https://commons.wikimedia.org/wiki/File:Husqvarna_logo_ArtWW.svg
+
+## From EV Nepal
+
+The `.webp` logos below were taken from the brand list at https://www.ev-nepal.com/bike-brands-in-nepal
+(files under https://www.ev-nepal.com/brands/), re-encoded unchanged in content. They are the brands' own
+trademarks, used only to link to listings of that brand; replace any with an official file if a brand asks.
+
+- `tvs.webp`, `benelli.webp`, `bmw.webp`, `crossfire.webp`, `ducati.webp`, `hartford.webp`, `jawa.webp`,
+  `morbidelli.webp`, `mv-agusta.webp` (from `mv_agusta.webp`), `revolt.webp`, `super-soco.webp` (from `super_soco.webp`),
+  `triumph.webp`, `ultraviolette.webp`, `yadea.webp`, `yezdi.webp`, `zonsen.webp` (the Zongshen mark), `zontes.webp`,
+  `zuumav.webp`, `zxmoto.webp`

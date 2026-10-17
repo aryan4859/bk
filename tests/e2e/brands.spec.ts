@@ -5,13 +5,16 @@ test.describe("popular brands on the home page", () => {
     await page.goto("/");
     const grid = page.locator("section[aria-labelledby=brands]");
     await expect(grid.getByRole("heading", { name: "Popular brands" })).toBeVisible();
-    await expect(grid.getByRole("list").first().getByRole("listitem")).toHaveCount(14);
+    const popular = grid.getByRole("list").first();
+    await expect(popular.getByRole("listitem")).toHaveCount(14);
     // every logo file loads
-    const logos = grid.locator("img");
-    await expect(logos).toHaveCount(12);
+    const logos = popular.locator("img");
+    await expect(logos).toHaveCount(14);
     for (const ok of await logos.evaluateAll((is) => is.map((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0))) expect(ok).toBe(true);
-    // brands without a reliable logo show their name instead of a wrong logo
-    await expect(grid.getByRole("link", { name: /^TVS/ }).locator("img")).toHaveCount(0);
+    // brands without a logo file show their name instead
+    await grid.getByText(/All \d+ brands/).click();
+    await expect(grid.getByRole("link", { name: /^Keren/ }).locator("img")).toHaveCount(0);
+    await expect(grid.getByRole("link", { name: /^MV Agusta logo MV Agusta/ })).toBeVisible();
     // live counts, and the tile filters the listings
     await expect(grid.getByRole("link", { name: /^Bajaj logo Bajaj 1 for sale$/ })).toBeVisible();
     await grid.getByRole("link", { name: /^Bajaj logo/ }).click();

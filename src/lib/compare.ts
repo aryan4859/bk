@@ -1,4 +1,4 @@
-import { TYPE_LABEL } from "./constants";
+import { CONDITIONS, type Condition, TYPE_LABEL } from "./constants";
 import { formatKm, formatNpr } from "./format";
 
 export const COMPARE_MAX = 3;
@@ -13,6 +13,7 @@ export function parseCompareIds(raw: string | string[] | undefined): string[] {
 type CompareListing = {
   type: "MOTORCYCLE" | "SCOOTER"; brand: string; model: string; year: number; kmDriven: number;
   ownerCount: number; priceNpr: number; negotiable: boolean; bluebookOk: boolean; city: string;
+  condition?: Condition | null; lotNumber?: number | null;
 };
 
 export type CompareRow = { label: string; values: string[]; best?: number[] };
@@ -32,6 +33,9 @@ export function compareRows(ls: CompareListing[]): CompareRow[] {
     { label: "Year", values: ls.map((l) => String(l.year)), best: best(ls.map((l) => l.year), "max") },
     { label: "Driven", values: ls.map((l) => formatKm(l.kmDriven)), best: best(ls.map((l) => l.kmDriven), "min") },
     { label: "Owners", values: ls.map((l) => String(l.ownerCount)), best: best(ls.map((l) => l.ownerCount), "min") },
+    // rows only when at least one ad has the detail (older ads predate these fields)
+    ...(ls.some((l) => l.condition) ? [{ label: "Condition", values: ls.map((l) => (l.condition ? CONDITIONS[l.condition].label : "Not stated")) }] : []),
+    ...(ls.some((l) => l.lotNumber) ? [{ label: "Lot", values: ls.map((l) => (l.lotNumber ? String(l.lotNumber) : "Not stated")) }] : []),
     { label: "Bluebook", values: ls.map((l) => (l.bluebookOk ? "Seller says up to date" : "Not stated")) },
     { label: "Location", values: ls.map((l) => l.city) },
   ];

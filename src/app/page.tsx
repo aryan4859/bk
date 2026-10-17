@@ -7,7 +7,7 @@ import { Hero } from "@/components/Hero";
 import { Icon } from "@/components/Icon";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import type { Listed } from "@/lib/catalog";
-import { BRANDS, BUDGETS } from "@/lib/constants";
+import { BRANDS, BUDGETS, POPULAR_BRAND_COUNT } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { FEATURED_MAX, cardSelect, sellerRatings } from "@/lib/queries";
 
@@ -77,7 +77,14 @@ export default async function Home() {
       <BudgetBands bands={budgets} />
 
       <Section id="brands" title="Popular brands" more={{ href: "/listings", label: "All bikes" }}>
-        <BrandGrid brands={BRANDS.filter((b) => b !== "Other")} counts={brandCounts} />
+        <BrandGrid brands={BRANDS.slice(0, POPULAR_BRAND_COUNT)} counts={brandCounts} />
+        <details className="group mt-3">
+          <summary className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
+            <span className="group-open:hidden">All {BRANDS.length - 1} brands</span>
+            <span className="hidden group-open:inline">Fewer brands</span>
+          </summary>
+          <div className="mt-3"><BrandGrid brands={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} counts={brandCounts} /></div>
+        </details>
       </Section>
 
       {cities.length > 0 && (
