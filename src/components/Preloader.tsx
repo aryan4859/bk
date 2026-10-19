@@ -34,6 +34,12 @@ export function Preloader() {
       }
       const easing = "cubic-bezier(0.65, 0, 0.35, 1)";
       bg.animate({ backgroundColor: ["var(--color-canvas)", "transparent"] }, { duration: FLIGHT_MS, easing, fill: "forwards" });
+      // the header logo is white on black, so the drawing turns white on the way there
+      box.animate({ color: [getComputedStyle(box).color, getComputedStyle(pairs[0][1]!).color] }, { duration: FLIGHT_MS, easing, fill: "forwards" });
+      const gold = pairs[0][1]!.querySelector("path.text-gold");
+      if (gold) for (const p of box.querySelectorAll<SVGPathElement>("path.text-gold")) {
+        p.animate({ color: [getComputedStyle(p).color, getComputedStyle(gold).color] }, { duration: FLIGHT_MS, easing, fill: "forwards" });
+      }
       await Promise.all(pairs.map(([from, to]) => {
         const a = from!.getBoundingClientRect(), b = to!.getBoundingClientRect();
         const move = `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${b.width / a.width})`;

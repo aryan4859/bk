@@ -15,8 +15,8 @@ test.describe("popular brands on the home page", () => {
     await grid.getByText(/All \d+ brands/).click();
     await expect(grid.getByRole("link", { name: /^Keren/ }).locator("img")).toHaveCount(0);
     await expect(grid.getByRole("link", { name: /^MV Agusta logo MV Agusta/ })).toBeVisible();
-    // live counts, and the tile filters the listings
-    await expect(grid.getByRole("link", { name: /^Bajaj logo Bajaj 1 for sale$/ })).toBeVisible();
+    // the tile filters the listings
+    await expect(grid.getByRole("link", { name: /^Bajaj logo Bajaj$/ })).toBeVisible();
     await grid.getByRole("link", { name: /^Bajaj logo/ }).click();
     await expect(page).toHaveURL(/\/listings\?brand=Bajaj/);
     await expect(page.getByText("Bajaj Pulsar NS200").first()).toBeVisible();

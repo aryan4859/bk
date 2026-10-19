@@ -30,12 +30,14 @@ export function ListingCard({ listing: l, compare = false, priority = false }: P
           {featured && <Chip tone="featured" className="absolute left-2 top-2 z-10">Featured</Chip>}
         </div>
         <div className="flex flex-1 flex-col p-3">
-          <div className="truncate text-[15px] font-medium text-ink group-hover:text-brand">{l.year} {l.brand} {l.model}</div>
+          <div className="truncate text-[15px] font-medium text-ink group-hover:text-brand">{l.brand} {l.model}</div>
           <div className="mt-1 text-lg font-bold tabular-nums text-ink">
             {formatNpr(l.priceNpr)}
             {l.negotiable && <span className="ml-1.5 text-xs font-normal text-muted">negotiable</span>}
           </div>
           <div className="mt-auto pt-2 text-[13px] text-muted">
+            <span className="tabular-nums">{l.year}</span>
+            <span aria-hidden className="mx-1.5 text-muted-soft">|</span>
             <span className="tabular-nums">{formatKm(l.kmDriven)}</span>
             <span aria-hidden className="mx-1.5 text-muted-soft">|</span>
             {l.city}

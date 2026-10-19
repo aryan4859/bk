@@ -10,11 +10,10 @@ const LOGO: Record<string, string> = {
   Zontes: "zontes.webp", Zuumav: "zuumav.webp", ZXMoto: "zxmoto.webp",
 };
 
-export function BrandGrid({ brands, counts }: { brands: readonly string[]; counts: Record<string, number> }) {
+export function BrandGrid({ brands }: { brands: readonly string[] }) {
   return (
     <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-7">
       {brands.map((b) => {
-        const n = counts[b] ?? 0;
         return (
           <li key={b}>
             <Link
@@ -31,7 +30,6 @@ export function BrandGrid({ brands, counts }: { brands: readonly string[]; count
                 )}
               </span>
               <span className="mt-2 text-sm font-medium text-ink group-hover:text-brand">{b}</span>
-              <span className="text-xs text-muted">{n === 0 ? "None right now" : `${n} for sale`}</span>
             </Link>
           </li>
         );

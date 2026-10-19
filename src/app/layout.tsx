@@ -41,12 +41,13 @@ export const metadata: Metadata = {
 async function Header() {
   const user = await getUser();
   const unread = user ? await unreadThreadCount(user.id) : 0;
-  const navLink = "text-sm font-medium text-body transition-colors hover:text-accent";
+  const navLink = "text-sm font-medium text-white/80 transition-colors hover:text-white";
+  // black in both themes, with the logo in white as in the original artwork
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-raised">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-black">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-7 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2" aria-label={`${BUSINESS.siteName} home`}>
-          <Logo />
+          <Logo className="text-white" />
         </Link>
         <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
           <Link href="/listings?type=MOTORCYCLE" className={navLink}>Motorcycles</Link>
@@ -68,7 +69,7 @@ async function Header() {
           ]}
         />
         <div className="flex items-center gap-2 sm:gap-4 md:ml-auto">
-          <ThemeToggle />
+          <ThemeToggle className="!text-white hover:!bg-white/10" />
           <div className="hidden items-center gap-4 sm:flex">
             {user ? (
               <>

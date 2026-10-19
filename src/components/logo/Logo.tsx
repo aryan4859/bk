@@ -24,10 +24,10 @@ export function Lettering({ className = "", draw = false, offset = 0, ...rest }:
 }
 
 /** Emblem and lettering side by side, for the header and footer. The preloader lands on the parts marked data-logo-*. */
-export function Logo({ size = "md" }: { size?: "sm" | "md" }) {
+export function Logo({ size = "md", className = "text-ink" }: { size?: "sm" | "md"; className?: string }) {
   const target = size === "md"; // only the header logo is where the preloader lands
   return (
-    <span data-logo={target || undefined} className="flex items-center gap-2 text-ink sm:gap-2.5">
+    <span data-logo={target || undefined} className={`flex items-center gap-2 sm:gap-2.5 ${className}`}>
       <Emblem data-logo-mark={target || undefined} className={target ? "h-8 w-auto sm:h-9" : "h-7 w-auto"} />
       <Lettering data-logo-text={target || undefined} className={target ? "h-[10px] w-auto sm:h-[13px]" : "h-[10px] w-auto"} />
     </span>

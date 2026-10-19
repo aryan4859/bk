@@ -30,6 +30,7 @@
   --color-star: #c07a1a;
   --color-on-accent: #ffffff;    /* 5.3:1 on the red */
   --color-gold: #a5802f;         /* the logo finial; decorative */
+  --color-gold-on-dark: #e6d3a3; /* the finial on the black header, the same in both themes */
   --color-snow: #ffffff;         /* logo plates, white in both themes so dark logos stay visible */
   --color-on-snow: #16191f;
 
@@ -195,6 +196,7 @@
 /* The artwork is white on dark in the original; here it takes the text colour, with the finial in gold. */
 .logo-art path { fill: currentColor; }
 .logo-art path.text-gold { color: var(--color-gold); }
+header .logo-art path.text-gold { color: var(--color-gold-on-dark); }
 
 /* ============ preloader: the logo is traced, filled, then flies into the header ============ */
 [data-state="drawing"] .logo-art path {

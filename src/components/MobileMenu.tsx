@@ -23,7 +23,7 @@ export function MobileMenu({ links, loggedIn, logout }: Props) {
 
   return (
     <div ref={root} className="relative ml-auto md:hidden">
-      <button type="button" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpenFor(open ? null : pathname)} className="btn-outline !px-3">
+      <button type="button" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpenFor(open ? null : pathname)} className="btn border border-white/30 !px-3 text-white hover:bg-white/10">
         {open ? "Close" : "Menu"}
       </button>
       {open && (

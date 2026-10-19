@@ -23,10 +23,9 @@ const SAFETY = [
 const getHomeStats = unstable_cache(
   async () => {
     const live = { status: "ACTIVE" } as const;
-    const [count, cities, brands, models, budgetCounts] = await Promise.all([
+    const [count, cities, models, budgetCounts] = await Promise.all([
       db.listing.count({ where: live }),
       db.listing.groupBy({ by: ["city"], where: live, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 8 }),
-      db.listing.groupBy({ by: ["brand"], where: live, _count: { brand: true } }),
       db.listing.groupBy({ by: ["brand", "model", "type"], where: live, _count: { _all: true }, orderBy: [{ brand: "asc" }, { model: "asc" }] }),
       Promise.all(BUDGETS.map((b) => db.listing.count({ where: { ...live, priceNpr: { gte: b.min, lte: b.max } } }))),
     ]);
@@ -34,7 +33,6 @@ const getHomeStats = unstable_cache(
     const listed: Listed[] = models.map((m) => ({ brand: m.brand, model: m.model, type: m.type, n: m._count._all }));
     return {
       count, cities, listed,
-      brandCounts: Object.fromEntries(brands.map((b) => [b.brand, b._count.brand])) as Record<string, number>,
       budgets: BUDGETS.map((b, i) => ({ key: b.key, label: b.label, count: budgetCounts[i] })),
     };
   },
@@ -43,7 +41,7 @@ const getHomeStats = unstable_cache(
 );
 
 export default async function Home() {
-  const [featured, latest, { count, cities, brandCounts, listed, budgets }] = await Promise.all([
+  const [featured, latest, { count, cities, listed, budgets }] = await Promise.all([
     db.listing.findMany({ where: { status: "ACTIVE", featuredUntil: { gt: new Date() } }, orderBy: { featuredUntil: "desc" }, take: FEATURED_MAX, select: cardSelect }),
     db.listing.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" }, take: 8, select: cardSelect }),
     getHomeStats(),
@@ -62,6 +60,17 @@ export default async function Home() {
         </Section>
       )}
 
+      <Section id="brands" title="Popular brands" more={{ href: "/listings", label: "All bikes" }}>
+        <BrandGrid brands={BRANDS.slice(0, POPULAR_BRAND_COUNT)} />
+        <details className="group mt-3">
+          <summary className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
+            <span className="group-open:hidden">All {BRANDS.length - 1} brands</span>
+            <span className="hidden group-open:inline">Fewer brands</span>
+          </summary>
+          <div className="mt-3"><BrandGrid brands={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} /></div>
+        </details>
+      </Section>
+
       <Section id="latest" title="Recently added" more={{ href: "/listings", label: `View all ${count.toLocaleString("en-IN")}` }}>
         {latest.length === 0 ? (
           <p className="rounded-lg border border-line bg-raised p-10 text-center text-muted">
@@ -75,17 +84,6 @@ export default async function Home() {
       </Section>
 
       <BudgetBands bands={budgets} />
-
-      <Section id="brands" title="Popular brands" more={{ href: "/listings", label: "All bikes" }}>
-        <BrandGrid brands={BRANDS.slice(0, POPULAR_BRAND_COUNT)} counts={brandCounts} />
-        <details className="group mt-3">
-          <summary className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
-            <span className="group-open:hidden">All {BRANDS.length - 1} brands</span>
-            <span className="hidden group-open:inline">Fewer brands</span>
-          </summary>
-          <div className="mt-3"><BrandGrid brands={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} counts={brandCounts} /></div>
-        </details>
-      </Section>
 
       {cities.length > 0 && (
         <Section id="cities" title="Bikes by city">
