@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
@@ -5,11 +6,26 @@ import { BrandStrip } from "@/components/BrandStrip";
 import { BudgetBands } from "@/components/BudgetBands";
 import { Hero } from "@/components/Hero";
 import { Icon } from "@/components/Icon";
+import { JsonLd } from "@/components/JsonLd";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import type { Listed } from "@/lib/catalog";
+import { BUSINESS } from "@/lib/business";
 import { BRANDS, BUDGETS, POPULAR_BRAND_COUNT } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { FEATURED_MAX, cardSelect, sellerRatings } from "@/lib/queries";
+import { organizationLd, siteUrl } from "@/lib/site";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: BUSINESS.siteName,
+    locale: "en_NP",
+    url: "/",
+    title: `${BUSINESS.siteName}: Buy and Sell Used Bikes and Scooters in Nepal`,
+    description: "Second-hand motorcycles and scooters listed by their owners across Nepal. Search by brand, city and price, and message sellers directly.",
+  },
+};
 
 const SAFETY = [
   "See the bike in daylight, somewhere public.",
@@ -19,9 +35,9 @@ const SAFETY = [
 ] as const;
 
 const PROMISES = [
-  { icon: "shield", title: "Real listings", text: "Posted by owners, not dealers" },
+  { icon: "shield", title: "Real listings", text: "From owners, not dealers" },
   { icon: "chat", title: "Talk directly", text: "Call or message the seller" },
-  { icon: "lock", title: "Buy safely", text: "Checks to make before you pay" },
+  { icon: "lock", title: "Buy safely", text: "Checks before you pay" },
   { icon: "pin", title: "Across Nepal", text: "Bikes in every major city" },
 ] as const;
 
@@ -57,35 +73,49 @@ export default async function Home() {
   const withRating = <T extends { sellerId: string }>(l: T) => ({ ...l, rating: ratings.get(l.sellerId) ?? null });
   return (
     <>
+      <JsonLd data={{
+        "@graph": [
+          organizationLd(),
+          {
+            "@type": "WebSite",
+            "@id": `${siteUrl()}/#website`,
+            url: siteUrl(),
+            name: BUSINESS.siteName,
+            publisher: { "@id": `${siteUrl()}/#organization` },
+            potentialAction: { "@type": "SearchAction", target: `${siteUrl()}/listings?q={search_term_string}`, "query-input": "required name=search_term_string" },
+          },
+        ],
+      }} />
       <Hero count={count} cities={cities} listed={listed} />
 
       <BrandStrip popular={BRANDS.slice(0, POPULAR_BRAND_COUNT)} rest={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} />
 
-      <section aria-label="Why buy here" className="mt-10 border-y border-line bg-wash sm:mt-12">
+      <section aria-labelledby="why" className="mt-10 border-y border-line bg-wash sm:mt-12">
+        <h2 id="why" className="sr-only">Why buy a used bike on {BUSINESS.siteName}</h2>
         <ul className="mx-auto grid max-w-6xl gap-x-6 gap-y-5 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:divide-x lg:divide-line">
           {PROMISES.map((p) => (
             <li key={p.title} className="flex items-center gap-3.5 lg:pl-6 lg:first:pl-0">
               <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-raised text-ink ring-1 ring-line">
                 <Icon name={p.icon} className="size-5" />
               </span>
-              <span>
-                <span className="block text-sm font-semibold text-ink">{p.title}</span>
-                <span className="block text-sm text-muted">{p.text}</span>
-              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-ink">{p.title}</h3>
+                <p className="text-sm text-muted">{p.text}</p>
+              </div>
             </li>
           ))}
         </ul>
       </section>
 
       {featured.length > 0 && (
-        <Section id="featured" title="Featured ads" more={{ href: "/listings", label: "View all" }}>
+        <Section id="featured" title="Featured bikes for sale" more={{ href: "/listings", label: "View all" }}>
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {featured.map((l, i) => <ListingCard key={l.id} listing={withRating(l)} compare priority={i < 4} />)}
           </div>
         </Section>
       )}
 
-      <Section id="latest" title="Recently added" more={{ href: "/listings", label: `View all ${count.toLocaleString("en-IN")}` }}>
+      <Section id="latest" title="Recently added used bikes" more={{ href: "/listings", label: `View all ${count.toLocaleString("en-IN")}` }}>
         {latest.length === 0 ? (
           <p className="rounded-lg border border-line bg-raised p-10 text-center text-muted">
             Nothing listed yet. <Link href="/sell" className="link">Post the first bike.</Link>
@@ -100,7 +130,7 @@ export default async function Home() {
       <BudgetBands bands={budgets} />
 
       {cities.length > 0 && (
-        <Section id="cities" title="Bikes by city">
+        <Section id="cities" title="Used bikes by city">
           <ul className="flex flex-wrap gap-2">
             {cities.map((c) => (
               <li key={c.city}>

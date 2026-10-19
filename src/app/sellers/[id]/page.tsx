@@ -7,12 +7,23 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { Stars } from "@/components/Stars";
 import { deleteReview } from "@/lib/actions";
 import { getUser } from "@/lib/auth";
+import { BUSINESS } from "@/lib/business";
 import { db } from "@/lib/db";
 import { timeAgo } from "@/lib/format";
 import { cardSelect } from "@/lib/queries";
 import { reviewEligibility } from "@/lib/reviews";
 
-export const metadata: Metadata = { title: "Seller profile" };
+export async function generateMetadata({ params }: PageProps<"/sellers/[id]">): Promise<Metadata> {
+  const { id } = await params;
+  const seller = await db.user.findUnique({ where: { id }, select: { name: true, email: true, banned: true } });
+  if (!seller || seller.banned) return { title: "Seller profile", robots: { index: false } };
+  const name = seller.name ?? seller.email.split("@")[0];
+  return {
+    title: `${name}: bikes for sale and seller reviews`,
+    description: `Used motorcycles and scooters for sale by ${name} on ${BUSINESS.siteName}, with reviews from buyers who dealt with them.`,
+    alternates: { canonical: `/sellers/${id}` },
+  };
+}
 
 export default async function SellerPage({ params }: PageProps<"/sellers/[id]">) {
   const { id } = await params;

@@ -3,7 +3,7 @@ import { CookieSettingsButton } from "@/components/CookieConsent";
 import { Contact, LegalPage } from "@/components/LegalPage";
 import { BUSINESS } from "@/lib/business";
 
-export const metadata: Metadata = { title: "Cookie policy", description: "The cookies this site sets and what each one is for." };
+export const metadata: Metadata = { title: "Cookie policy", description: "The cookies this site sets and what each one is for.", alternates: { canonical: "/cookies" } };
 
 export default function Cookies() {
   return (

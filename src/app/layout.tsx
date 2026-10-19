@@ -19,6 +19,7 @@ import { BUSINESS, businessRows } from "@/lib/business";
 import { readFlash } from "@/lib/flash";
 import { preloadScript, themeScript } from "@/lib/head-scripts";
 import { unreadThreadCount } from "@/lib/queries";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 // Inter for everything; the Devanagari face only for the assistant's Nepali name.
@@ -33,9 +34,15 @@ export const viewport: Viewport = {
   ],
 };
 
+// Search engines show roughly 50-60 characters of a title and 150-160 of a description.
+// Canonical URLs are set per page: one here would be inherited by every page that forgets its own.
 export const metadata: Metadata = {
-  title: { default: `${BUSINESS.siteName}: used bikes and scooters in Nepal`, template: `%s · ${BUSINESS.siteName}` },
-  description: "Browse used motorcycles and scooters for sale across Nepal, filter by brand, city and price, and message sellers.",
+  metadataBase: new URL(siteUrl()),
+  title: { default: `${BUSINESS.siteName}: Buy and Sell Used Bikes and Scooters in Nepal`, template: `%s · ${BUSINESS.siteName}` },
+  description: "Buy and sell used motorcycles and scooters in Nepal. Compare second-hand Honda, Yamaha, Bajaj and TVS bikes by price, city and year, then message the owner.",
+  applicationName: BUSINESS.siteName,
+  openGraph: { type: "website", siteName: BUSINESS.siteName, locale: "en_NP" },
+  twitter: { card: "summary_large_image" },
 };
 
 async function Header() {

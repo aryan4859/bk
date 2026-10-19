@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Contact, LegalPage } from "@/components/LegalPage";
 import { BUSINESS } from "@/lib/business";
 
-export const metadata: Metadata = { title: "Privacy policy", description: "What personal information we collect, why we collect it, and your choices." };
+export const metadata: Metadata = { title: "Privacy policy", description: "What personal information we collect, why we collect it, and your choices.", alternates: { canonical: "/privacy" } };
 
 export default function Privacy() {
   return (

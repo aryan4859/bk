@@ -3,7 +3,7 @@ import { BusinessValue } from "@/components/BusinessValue";
 import { PageHero } from "@/components/PageHero";
 import { BUSINESS, businessRows } from "@/lib/business";
 
-export const metadata: Metadata = { title: "Contact and business details", description: `Who runs ${BUSINESS.siteName} and how to contact us.` };
+export const metadata: Metadata = { title: "Contact and business details", description: `Who runs ${BUSINESS.siteName} and how to contact us.`, alternates: { canonical: "/contact" } };
 
 export default function ContactPage() {
   const rows = businessRows();

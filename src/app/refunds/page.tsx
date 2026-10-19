@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Contact, LegalPage } from "@/components/LegalPage";
 import { BUSINESS } from "@/lib/business";
 
-export const metadata: Metadata = { title: "Refund policy", description: "What is and is not refundable when using the site." };
+export const metadata: Metadata = { title: "Refund policy", description: "What is and is not refundable when using the site.", alternates: { canonical: "/refunds" } };
 
 export default function Refunds() {
   return (

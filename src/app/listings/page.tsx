@@ -8,7 +8,26 @@ import { saveSearch } from "@/lib/actions";
 import { getUser } from "@/lib/auth";
 import { filtersToQuery, parseFilters, searchListings } from "@/lib/queries";
 
-export const metadata: Metadata = { title: "Browse bikes and scooters", description: "Filter used motorcycles and scooters for sale in Nepal by brand, city, price, year and kilometres driven." };
+// Type, brand and city pages are landing pages in their own right ("used Honda scooters in Pokhara"), so each gets its
+// own title and canonical URL. Sorting, price, year and mileage filters point back to that page instead of competing with it.
+export async function generateMetadata({ searchParams }: PageProps<"/listings">): Promise<Metadata> {
+  const f = parseFilters(await searchParams);
+  const kind = f.type === "MOTORCYCLE" ? "motorcycles" : f.type === "SCOOTER" ? "scooters" : "bikes and scooters";
+  const where = f.city ? `in ${f.city}` : "in Nepal";
+  const canonical = new URLSearchParams();
+  if (f.type === "MOTORCYCLE" || f.type === "SCOOTER") canonical.set("type", f.type);
+  if (f.brand) canonical.set("brand", f.brand);
+  if (f.city) canonical.set("city", f.city);
+  if (f.page > 1) canonical.set("page", String(f.page));
+  const title = `Used ${f.brand ? `${f.brand} ` : ""}${kind} for sale ${where}${f.page > 1 ? `, page ${f.page}` : ""}`;
+  return {
+    title,
+    description: `Browse second-hand ${f.brand ? `${f.brand} ` : ""}${kind} for sale ${where}, listed by their owners. Filter by price, model year and kilometres driven, and message sellers directly.`,
+    alternates: { canonical: canonical.size ? `/listings?${canonical}` : "/listings" },
+    // keyword searches are endless near-duplicates of the pages above
+    ...(f.q && { robots: { index: false, follow: true } }),
+  };
+}
 
 export default async function Browse({ searchParams }: PageProps<"/listings">) {
   const f = parseFilters(await searchParams);

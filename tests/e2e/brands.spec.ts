@@ -4,7 +4,7 @@ test.describe("popular brands on the home page", () => {
   test("shows a tile per brand with its logo, and links to that brand's bikes", async ({ page, consoleErrors }) => {
     await page.goto("/");
     const grid = page.locator("section[aria-labelledby=brands]");
-    await expect(grid.getByRole("heading", { name: "Popular brands" })).toBeVisible();
+    await expect(grid.getByRole("heading", { name: "Popular bike brands" })).toBeVisible();
     const popular = grid.getByRole("list").first();
     await expect(popular.getByRole("listitem")).toHaveCount(14);
     // every logo file loads

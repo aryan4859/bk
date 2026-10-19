@@ -3,8 +3,7 @@ import { formatNpr } from "./format";
 import { sendMail } from "./mail";
 import { BUSINESS } from "./business";
 import { buildWhere, filtersFromQuery } from "./queries";
-
-const siteUrl = () => (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+import { siteUrl } from "./site";
 
 /**
  * Called when an ad goes live. Emails buyers who saved it and whose saved price is now higher, and

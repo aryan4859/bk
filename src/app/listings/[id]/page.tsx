@@ -5,6 +5,7 @@ import { cache } from "react";
 import { CompareToggle } from "@/components/Compare";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { Gallery } from "@/components/Gallery";
+import { JsonLd } from "@/components/JsonLd";
 import { ReportButton } from "@/components/ReportButton";
 import { Stars } from "@/components/Stars";
 import { deleteListing, setSold, startThread, toggleFavorite } from "@/lib/actions";
@@ -12,6 +13,7 @@ import { getUser } from "@/lib/auth";
 import { CONDITIONS, TYPE_LABEL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { formatKm, formatNpr, timeAgo } from "@/lib/format";
+import { absoluteUrl } from "@/lib/site";
 
 // shared by generateMetadata and the page so the ad is fetched once per request
 const getListing = cache((id: string) =>
@@ -24,9 +26,15 @@ const getListing = cache((id: string) =>
 export async function generateMetadata({ params }: PageProps<"/listings/[id]">): Promise<Metadata> {
   const l = await getListing((await params).id);
   if (!l || l.status !== "ACTIVE") return { title: "Bike", robots: { index: false } };
+  const name = `${l.year} ${l.brand} ${l.model}`;
+  const title = `${name} for sale in ${l.city}, ${formatNpr(l.priceNpr)}`;
+  const description = `Used ${name} ${TYPE_LABEL[l.type].toLowerCase()}, ${formatKm(l.kmDriven)} driven, ${l.ownerCount === 1 ? "first owner" : `${l.ownerCount} owners`}, for sale in ${l.city}. Asking ${formatNpr(l.priceNpr)}${l.negotiable ? " (negotiable)" : ""}. Message the owner directly.`;
+  const url = `/listings/${l.id}`;
   return {
-    title: `${l.year} ${l.brand} ${l.model}`,
-    description: `${l.year} ${l.brand} ${l.model}, ${formatKm(l.kmDriven)} driven, in ${l.city}. Asking ${formatNpr(l.priceNpr)}${l.negotiable ? " (negotiable)" : ""}.`,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "website", url, title, description, images: l.images.slice(0, 1).map((i) => ({ url: i.url, alt: name })) },
   };
 }
 
@@ -58,10 +66,56 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
     ["Bluebook", l.bluebookOk ? "Seller says up to date" : "Not stated by seller"],
     ["Location", l.city],
   ];
+  const url = absoluteUrl(`/listings/${l.id}`);
+  const name = `${l.year} ${l.brand} ${l.model}`;
+  // schema.org files scooters under Motorcycle too; sold ads stay public, so they are marked sold out
+  const vehicleLd = {
+    "@type": "Motorcycle",
+    "@id": `${url}#vehicle`,
+    name,
+    description: l.description,
+    url,
+    image: l.images.map((i) => absoluteUrl(i.url)),
+    brand: { "@type": "Brand", name: l.brand },
+    model: l.model,
+    category: TYPE_LABEL[l.type],
+    vehicleModelDate: String(l.year),
+    mileageFromOdometer: { "@type": "QuantitativeValue", value: l.kmDriven, unitCode: "KMT" },
+    numberOfPreviousOwners: l.ownerCount,
+    itemCondition: "https://schema.org/UsedCondition",
+    offers: {
+      "@type": "Offer",
+      url,
+      price: l.priceNpr,
+      priceCurrency: "NPR",
+      availability: l.status === "SOLD" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      itemCondition: "https://schema.org/UsedCondition",
+      availableAtOrFrom: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: l.city, addressCountry: "NP" } },
+      seller: { "@type": "Person", name: sellerName, url: absoluteUrl(`/sellers/${l.seller.id}`) },
+    },
+  };
+  const breadcrumbLd = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { name: "Home", item: absoluteUrl("/") },
+      { name: `${TYPE_LABEL[l.type]}s`, item: absoluteUrl(`/listings?type=${l.type}`) },
+      { name: l.brand, item: absoluteUrl(`/listings?brand=${encodeURIComponent(l.brand)}`) },
+      { name, item: url },
+    ].map((b, i) => ({ "@type": "ListItem", position: i + 1, ...b })),
+  };
   const wa = `https://wa.me/${l.phone}?text=${encodeURIComponent(`Hi, is your ${l.brand} ${l.model} still available?`)}`;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      {isPublic && <JsonLd data={{ "@graph": [vehicleLd, breadcrumbLd] }} />}
+      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li><Link href="/" className="hover:text-ink">Home</Link> ›</li>
+          <li><Link href={`/listings?type=${l.type}`} className="hover:text-ink">{TYPE_LABEL[l.type]}s</Link> ›</li>
+          <li><Link href={`/listings?brand=${encodeURIComponent(l.brand)}`} className="hover:text-ink">{l.brand}</Link> ›</li>
+          <li aria-current="page" className="text-ink">{l.model}</li>
+        </ol>
+      </nav>
       {sp.posted && <Banner tone="ok">Your ad is posted and waiting for review. It will go live as soon as it is approved.</Banner>}
       {sp.edited && <Banner tone="ok">Changes saved. The ad will be reviewed again before it shows publicly.</Banner>}
       {l.status === "PENDING" && !sp.posted && !sp.edited && <Banner tone="warn">This ad is waiting for review and is only visible to you{isAdmin && !isOwner ? " and admins" : ""}.</Banner>}
@@ -84,7 +138,7 @@ export default async function ListingPage({ params, searchParams }: PageProps<"/
             ))}
           </dl>
 
-          <h2 className="mt-10 text-[28px] sm:text-[36px]">Description</h2>
+          <h2 className="mt-10 text-[28px] sm:text-[36px]">About this {l.brand} {l.model}</h2>
           <p className="mt-3 max-w-[65ch] whitespace-pre-line leading-[1.7] text-ink">{l.description}</p>
         </div>
 

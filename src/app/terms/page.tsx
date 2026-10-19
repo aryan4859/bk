@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Contact, LegalPage } from "@/components/LegalPage";
 import { BUSINESS } from "@/lib/business";
 
-export const metadata: Metadata = { title: "Terms and conditions", description: "The rules for buying, selling and using the site." };
+export const metadata: Metadata = { title: "Terms and conditions", description: "The rules for buying, selling and using the site.", alternates: { canonical: "/terms" } };
 
 export default function Terms() {
   return (

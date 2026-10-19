@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
         ],
       },
+      // files in public/ are served with max-age=0 by default; logos and hero videos rarely change, so let repeat
+      // visits use the browser's copy for a week (rename the file to replace one sooner)
+      ...["/brands/:path*", "/videos/:path*"].map((source) => ({
+        source,
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      })),
     ];
   },
   // Build machines can report dozens of cores; one build worker per core blew past an 8 GB limit.
