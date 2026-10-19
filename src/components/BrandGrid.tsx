@@ -10,9 +10,9 @@ const LOGO: Record<string, string> = {
   Zontes: "zontes.webp", Zuumav: "zuumav.webp", ZXMoto: "zxmoto.webp",
 };
 
-export function BrandGrid({ brands }: { brands: readonly string[] }) {
+export function BrandGrid({ brands, cols = "lg:grid-cols-7", children }: { brands: readonly string[]; cols?: string; children?: React.ReactNode }) {
   return (
-    <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-7">
+    <ul className={`grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 ${cols}`}>
       {brands.map((b) => {
         return (
           <li key={b}>
@@ -26,7 +26,7 @@ export function BrandGrid({ brands }: { brands: readonly string[] }) {
                   // eslint-disable-next-line @next/next/no-img-element -- small static logos (SVG or a few KB of WebP); the optimizer adds nothing
                   <img src={`/brands/${LOGO[b]}`} alt={`${b} logo`} loading="lazy" decoding="async" className="h-full w-full object-contain" />
                 ) : (
-                  <span className="text-lg font-semibold tracking-tight text-on-snow">{b}</span>
+                  <span className="text-lg font-semibold tracking-tight text-on-snow ">{b}</span>
                 )}
               </span>
               <span className="mt-2 text-sm font-medium text-ink group-hover:text-brand">{b}</span>
@@ -34,6 +34,7 @@ export function BrandGrid({ brands }: { brands: readonly string[] }) {
           </li>
         );
       })}
+      {children}
     </ul>
   );
 }

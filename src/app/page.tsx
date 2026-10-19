@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
-import { BrandGrid } from "@/components/BrandGrid";
+import { BrandStrip } from "@/components/BrandStrip";
 import { BudgetBands } from "@/components/BudgetBands";
 import { Hero } from "@/components/Hero";
 import { Icon } from "@/components/Icon";
@@ -16,6 +16,13 @@ const SAFETY = [
   "Match the chassis and engine numbers to the bluebook.",
   "Take it for a ride before you agree on a price.",
   "Never send an advance to hold a bike.",
+] as const;
+
+const PROMISES = [
+  { icon: "shield", title: "Real listings", text: "Posted by owners, not dealers" },
+  { icon: "chat", title: "Talk directly", text: "Call or message the seller" },
+  { icon: "lock", title: "Buy safely", text: "Checks to make before you pay" },
+  { icon: "pin", title: "Across Nepal", text: "Bikes in every major city" },
 ] as const;
 
 // Totals only need to be roughly right, so they are cached for a minute instead of hitting the
@@ -52,6 +59,24 @@ export default async function Home() {
     <>
       <Hero count={count} cities={cities} listed={listed} />
 
+      <BrandStrip popular={BRANDS.slice(0, POPULAR_BRAND_COUNT)} rest={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} />
+
+      <section aria-label="Why buy here" className="mt-10 border-y border-line bg-wash sm:mt-12">
+        <ul className="mx-auto grid max-w-6xl gap-x-6 gap-y-5 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:divide-x lg:divide-line">
+          {PROMISES.map((p) => (
+            <li key={p.title} className="flex items-center gap-3.5 lg:pl-6 lg:first:pl-0">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-raised text-ink ring-1 ring-line">
+                <Icon name={p.icon} className="size-5" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-ink">{p.title}</span>
+                <span className="block text-sm text-muted">{p.text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {featured.length > 0 && (
         <Section id="featured" title="Featured ads" more={{ href: "/listings", label: "View all" }}>
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -59,17 +84,6 @@ export default async function Home() {
           </div>
         </Section>
       )}
-
-      <Section id="brands" title="Popular brands" more={{ href: "/listings", label: "All bikes" }}>
-        <BrandGrid brands={BRANDS.slice(0, POPULAR_BRAND_COUNT)} />
-        <details className="group mt-3">
-          <summary className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
-            <span className="group-open:hidden">All {BRANDS.length - 1} brands</span>
-            <span className="hidden group-open:inline">Fewer brands</span>
-          </summary>
-          <div className="mt-3"><BrandGrid brands={BRANDS.slice(POPULAR_BRAND_COUNT).filter((b) => b !== "Other")} /></div>
-        </details>
-      </Section>
 
       <Section id="latest" title="Recently added" more={{ href: "/listings", label: `View all ${count.toLocaleString("en-IN")}` }}>
         {latest.length === 0 ? (

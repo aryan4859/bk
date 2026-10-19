@@ -1,7 +1,7 @@
 export const BRANDS = [
   "Bajaj", "Hero", "Honda", "Yamaha", "TVS", "Suzuki", "Royal Enfield", "KTM",
   "Mahindra", "Vespa", "Aprilia", "Benelli", "CFMoto", "Husqvarna",
-  // the rest alphabetically; the first 14 are the popular ones shown up front on the home page
+  // the rest alphabetically; the first 6, up to Suzuki, are the popular ones shown up front on the home page
   "Ampere", "Ather", "BMW", "Crossfire", "CX", "Ducati", "Garow", "Hartford", "Jawa", "Keren", "Morbidelli",
   "Motorhead", "MV Agusta", "Niu", "Revolt", "Segway", "Super Soco", "Triumph", "Ultraviolette", "Yadea",
   "Yatri", "Yezdi", "Zeeho", "Zonsen", "Zontes", "Zuumav", "ZXMoto",
@@ -9,7 +9,7 @@ export const BRANDS = [
 ] as const;
 
 /** How many brands (from the start of BRANDS) the home page shows before "All brands". */
-export const POPULAR_BRAND_COUNT = 14;
+export const POPULAR_BRAND_COUNT = 6;
 
 export const CITIES = [
   "Kathmandu", "Lalitpur", "Bhaktapur", "Pokhara", "Biratnagar", "Birgunj",
