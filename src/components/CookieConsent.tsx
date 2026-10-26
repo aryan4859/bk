@@ -57,7 +57,7 @@ export function CookieConsent() {
       aria-labelledby="cookie-title"
       aria-describedby="cookie-desc"
       onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-      className="fixed inset-x-3 bottom-[calc(var(--compare-bar,0px)+0.75rem)] z-50 rounded-lg bg-dark p-6 text-on-dark-soft shadow-pop sm:inset-x-auto sm:bottom-[calc(var(--compare-bar,0px)+1.25rem)] sm:right-5 sm:max-w-sm"
+      className="fixed inset-x-3 bottom-[calc(var(--tab-bar,0px)+var(--compare-bar,0px)+0.75rem)] z-50 rounded-lg bg-dark p-6 text-on-dark-soft shadow-pop sm:inset-x-auto sm:bottom-[calc(var(--tab-bar,0px)+var(--compare-bar,0px)+1.25rem)] sm:right-5 sm:max-w-sm"
     >
       <h2 id="cookie-title" className="text-xl text-on-dark">Cookies</h2>
       <p id="cookie-desc" className="mt-2 text-sm">

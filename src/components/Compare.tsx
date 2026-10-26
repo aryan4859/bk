@@ -61,7 +61,7 @@ export function CompareBar() {
     <>
     {/* keeps the bottom of the page reachable behind the fixed bar */}
     <div aria-hidden className="h-20" />
-    <div role="region" aria-label="Compare bikes" className="fixed inset-x-0 bottom-0 z-40 bg-dark px-4 py-3 text-on-dark sm:px-6">
+    <div role="region" aria-label="Compare bikes" className="fixed inset-x-0 bottom-[var(--tab-bar,0px)] z-40 bg-dark px-4 py-3 text-on-dark sm:px-6">
       <div className="mx-auto flex max-w-6xl items-center gap-3 sm:gap-4">
         <span className="text-sm">{ids.length} {ids.length === 1 ? "bike" : "bikes"} selected{ids.length < 2 && <span className="hidden text-on-dark-soft sm:inline">, pick at least 2</span>}</span>
         <button type="button" onClick={() => write([])} className="text-sm text-on-dark-soft underline-offset-4 hover:text-on-dark hover:underline">Clear</button>

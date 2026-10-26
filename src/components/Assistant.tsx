@@ -88,7 +88,7 @@ export function Assistant() {
         aria-controls="assistant-panel"
         aria-label={open ? "Close Ask Seto Durbar" : "Ask Seto Durbar"}
         title={open ? undefined : "Ask Bike Dai"}
-        className={`chat-head fixed bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-4 z-40 inline-flex size-14 items-center justify-center rounded-full bg-ink text-canvas shadow-pop ring-4 ring-canvas transition-transform duration-150 hover:scale-105 active:scale-95 sm:right-5 ${open ? "max-sm:hidden" : ""}`}
+        className={`chat-head fixed bottom-[calc(var(--tab-bar,0px)+var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-4 z-40 inline-flex size-14 items-center justify-center rounded-full bg-ink text-canvas shadow-pop ring-4 ring-canvas transition-transform duration-150 hover:scale-105 active:scale-95 sm:right-5 ${open ? "max-sm:hidden" : ""}`}
       >
         <Icon name={open ? "close" : "bike"} className="size-7" />
         {greeting && !open && <span aria-hidden className="absolute -right-0.5 -top-0.5 inline-flex size-5 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-on-accent ring-2 ring-canvas">1</span>}
@@ -98,7 +98,7 @@ export function Assistant() {
         // a message notification sliding out of the chat head, the way chat apps preview a new message
         <div
           role="status"
-          className="greeting-pop fixed bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-[5.25rem] z-40 flex h-14 items-center sm:right-[5.5rem]"
+          className="greeting-pop fixed bottom-[calc(var(--tab-bar,0px)+var(--compare-bar,0px)+var(--cookie-notice,0px)+1rem)] right-[5.25rem] z-40 flex h-14 items-center sm:right-[5.5rem]"
         >
           <div className="relative flex max-w-[min(18rem,calc(100vw-6.5rem))] items-center rounded-lg bg-surface py-2 pl-3.5 pr-9 shadow-pop">
             {/* tail pointing right, at the chat head */}
@@ -122,7 +122,7 @@ export function Assistant() {
           id="assistant-panel"
           role="dialog"
           aria-label="Seto Durbar assistant"
-          className="fixed inset-0 z-50 flex flex-col bg-canvas sm:inset-auto sm:bottom-[calc(var(--compare-bar,0px)+var(--cookie-notice,0px)+4.5rem)] sm:right-5 sm:h-[min(640px,calc(100vh-8rem))] sm:w-[400px] sm:rounded-lg sm:shadow-pop"
+          className="fixed inset-0 z-50 flex flex-col bg-canvas sm:inset-auto sm:bottom-[calc(var(--tab-bar,0px)+var(--compare-bar,0px)+var(--cookie-notice,0px)+4.5rem)] sm:right-5 sm:h-[min(640px,calc(100vh-8rem))] sm:w-[400px] sm:rounded-lg sm:shadow-pop"
         >
           <header className="flex items-center justify-between gap-3 bg-surface px-4 py-3 sm:rounded-t-2xl">
             <div>

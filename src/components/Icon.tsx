@@ -17,6 +17,9 @@ const PATHS = {
   shield: "M12 3l7 3v5.5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5V6zM9 12l2 2 4-4",
   phone: "M5 4.5h3.5l1.5 4-2 1.5a11 11 0 006 6l1.5-2 4 1.5V19a1.5 1.5 0 01-1.5 1.5A15.5 15.5 0 013.5 6 1.5 1.5 0 015 4.5z",
   lock: "M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 017 0v3",
+  home: "M4 10.5L12 4l8 6.5V20h-5.5v-6h-5v6H4z",
+  heart: "M12 20s-7.5-4.6-7.5-10A4.25 4.25 0 0112 7.4 4.25 4.25 0 0119.5 10c0 5.4-7.5 10-7.5 10z",
+  user: "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7.5a3 3 0 100 6 3 3 0 000-6zM6.5 18a6.5 6.5 0 0111 0",
 } as const;
 
 export function Icon({ name, className = "size-4" }: { name: keyof typeof PATHS; className?: string }) {

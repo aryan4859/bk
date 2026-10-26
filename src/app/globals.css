@@ -106,6 +106,10 @@
 }
 :root[data-theme="light"] { color-scheme: light; }
 
+/* height of the mobile bottom tab bar; fixed bottom controls and the page sit above it */
+:root { --tab-bar: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+@media (width >= 48rem) { :root { --tab-bar: 0px; } }
+
 /* ============ base ============ */
 @layer base {
   html {
@@ -114,6 +118,7 @@
     color: var(--color-body);
   }
   body {
+    padding-bottom: var(--tab-bar);
     font-family: var(--font-body);
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;

@@ -8,6 +8,7 @@ import { CookieConsent, CookieSettingsButton } from "@/components/CookieConsent"
 import { CurrentYear } from "@/components/CurrentYear";
 import { HeadScript } from "@/components/HeadScript";
 import { Logo } from "@/components/logo/Logo";
+import { BottomNav } from "@/components/BottomNav";
 import { MobileMenu } from "@/components/MobileMenu";
 import { Preloader } from "@/components/Preloader";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -28,6 +29,7 @@ const deva = Noto_Serif_Devanagari({ variable: "--font-devanagari", subsets: ["d
 
 // browser chrome (address bar on phones) matches the page in each theme
 export const viewport: Viewport = {
+  viewportFit: "cover", // lets the bottom tab bar pad itself clear of the home indicator
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#1a1d22" },
@@ -87,7 +89,7 @@ async function Header() {
               <Link href="/login" className={navLink}>Log in</Link>
             )}
           </div>
-          <Link href="/sell" className="btn-primary min-h-9 whitespace-nowrap px-3 sm:px-4"><span>Sell<span className="hidden sm:inline"> your bike</span></span></Link>
+          <Link href="/sell" className="btn-primary min-h-9 whitespace-nowrap px-3 max-md:hidden sm:px-4"><span>Sell<span className="hidden sm:inline"> your bike</span></span></Link>
         </div>
       </div>
     </header>
@@ -95,7 +97,7 @@ async function Header() {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const flashMsg = await readFlash();
+  const [flashMsg, user] = await Promise.all([readFlash(), getUser()]);
   const footLink = "transition-colors hover:text-ink";
   return (
     <html lang="en" className={`${sans.variable} ${deva.variable} h-full`} suppressHydrationWarning>
@@ -149,6 +151,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </footer>
         <CompareBar />
+        <BottomNav loggedIn={!!user} />
         {assistantConfigured() && <Assistant />}
         <CookieConsent />
       </body>
